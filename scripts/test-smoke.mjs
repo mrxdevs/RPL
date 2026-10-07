@@ -144,6 +144,23 @@ async function runTests() {
     }
   }
 
+  // Test User / Fan login
+  const userLogin = await fetch(`${BASE_URL}/api/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username: "user", password: "user123" }),
+  });
+  if (userLogin.ok) {
+    const userJson = await userLogin.json();
+    if (userJson.data?.role === "user") {
+      logPass("General User / Fan authenticated successfully (Role: user)");
+    } else {
+      logFail("User role mismatch for user account");
+    }
+  } else {
+    logFail(`User login failed with status ${userLogin.status}`);
+  }
+
   // Test Umpire Live Scoring Delivery
   console.log("\n--- 4. Live Cricket Delivery Engine (Umpire Action) ---");
   const umpireLogin = await fetch(`${BASE_URL}/api/auth/login`, {
@@ -159,6 +176,10 @@ async function runTests() {
     logPass("Umpire authenticated for match gameplay action");
   } else {
     logFail("Umpire login failed");
+  }
+
+  if (!matchesRes?.data?.data || matchesRes.data.data.length === 0) {
+    logPass("Verified tournament starts clean and unconfigured (0 matches scheduled)");
   }
 
   // Post a ball delivery to Match 1 (live match)

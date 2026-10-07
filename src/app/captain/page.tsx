@@ -208,75 +208,81 @@ export default function CaptainDashboardPage() {
           </div>
         </CardHeader>
         <CardBody className="p-0 overflow-x-auto">
-          <table className="w-full text-left text-sm border-collapse">
-            <thead>
-              <tr className="border-b border-[var(--color-border)] text-xs font-semibold uppercase tracking-wider text-[var(--color-text-secondary)] font-display">
-                <th className="py-3 px-4">Order</th>
-                <th className="py-3 px-4">Player</th>
-                <th className="py-3 px-4">Current Role</th>
-                <th className="py-3 px-4 text-center">Reassign Role</th>
-                <th className="py-3 px-4 text-right">Order Position</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/5 font-score">
-              {squad.map((player, idx) => (
-                <tr key={player.id} className="hover:bg-white/5 transition-colors">
-                  <td className="py-3 px-4 font-bold text-[var(--color-accent)]">
-                    #{idx + 1}
-                  </td>
-                  <td className="py-3 px-4 font-sans font-medium text-white">
-                    {player.name}
-                    {player.id === team.captainId && (
-                      <span className="ml-2 text-xs text-[var(--color-brand-orange)] font-bold">
-                        (Captain)
-                      </span>
-                    )}
-                  </td>
-                  <td className="py-3 px-4 font-sans">
-                    <Badge variant="teal" size="sm">
-                      {player.role}
-                    </Badge>
-                  </td>
-                  <td className="py-3 px-4 text-center font-sans">
-                    <select
-                      value={player.role}
-                      onChange={(e) =>
-                        handleUpdateRole(player.id, e.target.value as PlayerRole)
-                      }
-                      className="px-2 py-1 rounded bg-[var(--color-bg-base)] border border-[var(--color-border)] text-xs text-white"
-                    >
-                      <option value="Batter">Batter</option>
-                      <option value="Bowler">Bowler</option>
-                      <option value="All-rounder">All-rounder</option>
-                      <option value="Wicketkeeper">Wicketkeeper</option>
-                    </select>
-                  </td>
-                  <td className="py-3 px-4 text-right">
-                    <div className="inline-flex items-center gap-1">
-                      <button
-                        type="button"
-                        disabled={idx === 0}
-                        onClick={() => movePlayerOrder(idx, "up")}
-                        aria-label="Move player up in batting order"
-                        className="p-1 rounded bg-black/40 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed text-xs text-white font-bold"
-                      >
-                        ▲
-                      </button>
-                      <button
-                        type="button"
-                        disabled={idx === squad.length - 1}
-                        onClick={() => movePlayerOrder(idx, "down")}
-                        aria-label="Move player down in batting order"
-                        className="p-1 rounded bg-black/40 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed text-xs text-white font-bold"
-                      >
-                        ▼
-                      </button>
-                    </div>
-                  </td>
+          {squad.length === 0 ? (
+            <div className="p-8 text-center text-sm text-[var(--color-text-secondary)]">
+              No players currently registered in this team squad. Players will appear after auction allocation or registration by the tournament admin.
+            </div>
+          ) : (
+            <table className="w-full text-left text-sm border-collapse">
+              <thead>
+                <tr className="border-b border-[var(--color-border)] text-xs font-semibold uppercase tracking-wider text-[var(--color-text-secondary)] font-display">
+                  <th className="py-3 px-4">Order</th>
+                  <th className="py-3 px-4">Player</th>
+                  <th className="py-3 px-4">Current Role</th>
+                  <th className="py-3 px-4 text-center">Reassign Role</th>
+                  <th className="py-3 px-4 text-right">Order Position</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-white/5 font-score">
+                {squad.map((player, idx) => (
+                  <tr key={player.id} className="hover:bg-white/5 transition-colors">
+                    <td className="py-3 px-4 font-bold text-[var(--color-accent)]">
+                      #{idx + 1}
+                    </td>
+                    <td className="py-3 px-4 font-sans font-medium text-white">
+                      {player.name}
+                      {player.id === team.captainId && (
+                        <span className="ml-2 text-xs text-[var(--color-brand-orange)] font-bold">
+                          (Captain)
+                        </span>
+                      )}
+                    </td>
+                    <td className="py-3 px-4 font-sans">
+                      <Badge variant="teal" size="sm">
+                        {player.role}
+                      </Badge>
+                    </td>
+                    <td className="py-3 px-4 text-center font-sans">
+                      <select
+                        value={player.role}
+                        onChange={(e) =>
+                          handleUpdateRole(player.id, e.target.value as PlayerRole)
+                        }
+                        className="px-2 py-1 rounded bg-[var(--color-bg-base)] border border-[var(--color-border)] text-xs text-white"
+                      >
+                        <option value="Batter">Batter</option>
+                        <option value="Bowler">Bowler</option>
+                        <option value="All-rounder">All-rounder</option>
+                        <option value="Wicketkeeper">Wicketkeeper</option>
+                      </select>
+                    </td>
+                    <td className="py-3 px-4 text-right">
+                      <div className="inline-flex items-center gap-1">
+                        <button
+                          type="button"
+                          disabled={idx === 0}
+                          onClick={() => movePlayerOrder(idx, "up")}
+                          aria-label="Move player up in batting order"
+                          className="p-1 rounded bg-black/40 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed text-xs text-white font-bold"
+                        >
+                          ▲
+                        </button>
+                        <button
+                          type="button"
+                          disabled={idx === squad.length - 1}
+                          onClick={() => movePlayerOrder(idx, "down")}
+                          aria-label="Move player down in batting order"
+                          className="p-1 rounded bg-black/40 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed text-xs text-white font-bold"
+                        >
+                          ▼
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </CardBody>
       </Card>
     </PageShell>

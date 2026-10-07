@@ -199,40 +199,49 @@ export default function HomePage() {
             <h3 className="text-xl font-bold font-display uppercase tracking-wide text-[var(--color-text-primary)]">
               Competing Franchises
             </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {teams.map((team) => (
-                <Link
-                  key={team.id}
-                  href={`/teams/${team.id}`}
-                  className="block p-4 rounded-xl bg-[var(--color-bg-surface)] border border-[var(--color-border)] hover:border-[var(--color-border-strong)] transition-all hover:-translate-y-0.5"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className="w-8 h-8 rounded-lg flex items-center justify-center font-display font-black text-sm text-black"
-                        style={{ backgroundColor: team.primaryColor || "#00B07D" }}
-                      >
-                        {team.shortName}
-                      </div>
-                      <div>
-                        <div className="font-bold text-sm text-[var(--color-text-primary)]">
-                          {team.name}
+            {teams.length === 0 ? (
+              <div className="p-8 text-center text-sm text-[var(--color-text-secondary)] rounded-xl bg-[var(--color-bg-surface)] border border-[var(--color-border)] space-y-2">
+                <p>No franchises registered yet.</p>
+                <p className="text-xs text-[var(--color-text-disabled)]">
+                  Teams and player rosters will appear here once onboarded by tournament officials.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {teams.map((team) => (
+                  <Link
+                    key={team.id}
+                    href={`/teams/${team.id}`}
+                    className="block p-4 rounded-xl bg-[var(--color-bg-surface)] border border-[var(--color-border)] hover:border-[var(--color-border-strong)] transition-all hover:-translate-y-0.5"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div
+                          className="w-8 h-8 rounded-lg flex items-center justify-center font-display font-black text-sm text-black"
+                          style={{ backgroundColor: team.primaryColor || "#00B07D" }}
+                        >
+                          {team.shortName}
                         </div>
-                        <div className="text-xs text-[var(--color-text-secondary)]">
-                          {team.playerIds.length} Registered Players
+                        <div>
+                          <div className="font-bold text-sm text-[var(--color-text-primary)]">
+                            {team.name}
+                          </div>
+                          <div className="text-xs text-[var(--color-text-secondary)]">
+                            {team.playerIds.length} Registered Players
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right font-score text-xs">
+                        <span className="text-[var(--color-text-secondary)]">Remaining</span>
+                        <div className="font-bold text-[var(--color-brand-teal-light)]">
+                          {formatCurrency(team.remainingBudget)}
                         </div>
                       </div>
                     </div>
-                    <div className="text-right font-score text-xs">
-                      <span className="text-[var(--color-text-secondary)]">Remaining</span>
-                      <div className="font-bold text-[var(--color-brand-teal-light)]">
-                        {formatCurrency(team.remainingBudget)}
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 

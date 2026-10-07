@@ -143,115 +143,127 @@ export default function AuctionPage() {
 
       {/* Tab 1: Teams Salary Caps */}
       {activeTab === "teams" && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {teams.map((t) => {
-            const spent = t.totalBudget - t.remainingBudget;
-            const pctSpent = Math.round((spent / t.totalBudget) * 100);
+        teams.length === 0 ? (
+          <div className="py-16 text-center text-sm text-[var(--color-text-secondary)] rounded-xl bg-[var(--color-bg-surface)] border border-[var(--color-border)]">
+            No franchises configured for this auction yet. Teams will be listed once registered in the admin console.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {teams.map((t) => {
+              const spent = t.totalBudget - t.remainingBudget;
+              const pctSpent = Math.round((spent / t.totalBudget) * 100);
 
-            return (
-              <Card key={t.id} variant="surface">
-                <CardBody className="p-6 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="text-xl font-bold font-display uppercase tracking-wide text-white">
-                        {t.name}
-                      </h3>
-                      <span className="text-xs text-[var(--color-text-secondary)]">
-                        {t.playerIds.length} Squad Members
-                      </span>
-                    </div>
-                    <div
-                      className="w-10 h-10 rounded-lg flex items-center justify-center font-display font-black text-black"
-                      style={{ backgroundColor: t.primaryColor || "#00B07D" }}
-                    >
-                      {t.shortName}
-                    </div>
-                  </div>
-
-                  {/* Budget Progress Bar */}
-                  <div className="space-y-1.5">
-                    <div className="flex items-center justify-between text-xs font-score">
-                      <span className="text-[var(--color-text-secondary)]">Spent: {formatCurrency(spent)}</span>
-                      <span className="text-[var(--color-brand-teal-light)] font-bold">
-                        {pctSpent}% Utilized
-                      </span>
-                    </div>
-                    <div className="w-full h-2 rounded-full bg-black/40 overflow-hidden">
+              return (
+                <Card key={t.id} variant="surface">
+                  <CardBody className="p-6 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="text-xl font-bold font-display uppercase tracking-wide text-white">
+                          {t.name}
+                        </h3>
+                        <span className="text-xs text-[var(--color-text-secondary)]">
+                          {t.playerIds.length} Squad Members
+                        </span>
+                      </div>
                       <div
-                        className="h-full bg-gradient-to-r from-[var(--color-brand-teal)] to-[var(--color-accent)] transition-all duration-500"
-                        style={{ width: `${pctSpent}%` }}
-                      />
+                        className="w-10 h-10 rounded-lg flex items-center justify-center font-display font-black text-black"
+                        style={{ backgroundColor: t.primaryColor || "#00B07D" }}
+                      >
+                        {t.shortName}
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="grid grid-cols-2 gap-3 pt-2 border-t border-[var(--color-border)] font-score">
-                    <div className="p-2.5 rounded-lg bg-black/20">
-                      <span className="text-[11px] text-[var(--color-text-secondary)] block">Total Purse</span>
-                      <span className="text-sm font-bold text-white">{formatCurrency(t.totalBudget)}</span>
+                    {/* Budget Progress Bar */}
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between text-xs font-score">
+                        <span className="text-[var(--color-text-secondary)]">Spent: {formatCurrency(spent)}</span>
+                        <span className="text-[var(--color-brand-teal-light)] font-bold">
+                          {pctSpent}% Utilized
+                        </span>
+                      </div>
+                      <div className="w-full h-2 rounded-full bg-black/40 overflow-hidden">
+                        <div
+                          className="h-full bg-gradient-to-r from-[var(--color-brand-teal)] to-[var(--color-accent)] transition-all duration-500"
+                          style={{ width: `${pctSpent}%` }}
+                        />
+                      </div>
                     </div>
-                    <div className="p-2.5 rounded-lg bg-black/20">
-                      <span className="text-[11px] text-[var(--color-text-secondary)] block">Remaining Cap</span>
-                      <span className="text-sm font-bold text-[var(--color-accent)]">
-                        {formatCurrency(t.remainingBudget)}
-                      </span>
-                    </div>
-                  </div>
 
-                  <Link href={`/teams/${t.id}`} className="block pt-1">
-                    <Button size="sm" variant="secondary" className="w-full">
-                      View Team Roster →
-                    </Button>
-                  </Link>
-                </CardBody>
-              </Card>
-            );
-          })}
-        </div>
+                    <div className="grid grid-cols-2 gap-3 pt-2 border-t border-[var(--color-border)] font-score">
+                      <div className="p-2.5 rounded-lg bg-black/20">
+                        <span className="text-[11px] text-[var(--color-text-secondary)] block">Total Purse</span>
+                        <span className="text-sm font-bold text-white">{formatCurrency(t.totalBudget)}</span>
+                      </div>
+                      <div className="p-2.5 rounded-lg bg-black/20">
+                        <span className="text-[11px] text-[var(--color-text-secondary)] block">Remaining Cap</span>
+                        <span className="text-sm font-bold text-[var(--color-accent)]">
+                          {formatCurrency(t.remainingBudget)}
+                        </span>
+                      </div>
+                    </div>
+
+                    <Link href={`/teams/${t.id}`} className="block pt-1">
+                      <Button size="sm" variant="secondary" className="w-full">
+                        View Team Roster →
+                      </Button>
+                    </Link>
+                  </CardBody>
+                </Card>
+              );
+            })}
+          </div>
+        )
       )}
 
       {/* Tab 2: Sold Players */}
       {activeTab === "sold" && (
-        <Card variant="surface">
-          <CardBody className="p-0 overflow-x-auto">
-            <table className="w-full text-left text-sm border-collapse">
-              <thead>
-                <tr className="border-b border-[var(--color-border)] text-xs font-semibold uppercase tracking-wider text-[var(--color-text-secondary)] font-display">
-                  <th className="py-3 px-4">Player</th>
-                  <th className="py-3 px-4">Role</th>
-                  <th className="py-3 px-4">Acquiring Franchise</th>
-                  <th className="py-3 px-4 text-right">Base Price</th>
-                  <th className="py-3 px-4 text-right">Sold Price</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/5 font-score">
-                {soldPlayers.map((p) => {
-                  const team = teams.find((t) => t.id === p.teamId);
-                  return (
-                    <tr key={p.id} className="hover:bg-white/5 transition-colors">
-                      <td className="py-3 px-4 font-sans font-medium text-white">
-                        {p.name}
-                      </td>
-                      <td className="py-3 px-4 font-sans">
-                        <Badge variant="teal" size="sm">
-                          {p.role}
-                        </Badge>
-                      </td>
-                      <td className="py-3 px-4 font-sans font-semibold text-[var(--color-accent)]">
-                        {team?.name || "Assigned"}
-                      </td>
-                      <td className="py-3 px-4 text-right text-[var(--color-text-secondary)]">
-                        {formatCurrency(p.basePrice)}
-                      </td>
-                      <td className="py-3 px-4 text-right font-bold text-[var(--color-brand-teal-light)] text-base">
-                        {formatCurrency(p.soldPrice || p.basePrice)}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </CardBody>
-        </Card>
+        soldPlayers.length === 0 ? (
+          <div className="py-16 text-center text-sm text-[var(--color-text-secondary)] rounded-xl bg-[var(--color-bg-surface)] border border-[var(--color-border)]">
+            No players sold yet. Acquisitions will be recorded here as bidding rounds conclude.
+          </div>
+        ) : (
+          <Card variant="surface">
+            <CardBody className="p-0 overflow-x-auto">
+              <table className="w-full text-left text-sm border-collapse">
+                <thead>
+                  <tr className="border-b border-[var(--color-border)] text-xs font-semibold uppercase tracking-wider text-[var(--color-text-secondary)] font-display">
+                    <th className="py-3 px-4">Player</th>
+                    <th className="py-3 px-4">Role</th>
+                    <th className="py-3 px-4">Acquiring Franchise</th>
+                    <th className="py-3 px-4 text-right">Base Price</th>
+                    <th className="py-3 px-4 text-right">Sold Price</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5 font-score">
+                  {soldPlayers.map((p) => {
+                    const team = teams.find((t) => t.id === p.teamId);
+                    return (
+                      <tr key={p.id} className="hover:bg-white/5 transition-colors">
+                        <td className="py-3 px-4 font-sans font-medium text-white">
+                          {p.name}
+                        </td>
+                        <td className="py-3 px-4 font-sans">
+                          <Badge variant="teal" size="sm">
+                            {p.role}
+                          </Badge>
+                        </td>
+                        <td className="py-3 px-4 font-sans font-semibold text-[var(--color-accent)]">
+                          {team?.name || "Assigned"}
+                        </td>
+                        <td className="py-3 px-4 text-right text-[var(--color-text-secondary)]">
+                          {formatCurrency(p.basePrice)}
+                        </td>
+                        <td className="py-3 px-4 text-right font-bold text-[var(--color-brand-teal-light)] text-base">
+                          {formatCurrency(p.soldPrice || p.basePrice)}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </CardBody>
+          </Card>
+        )
       )}
 
       {/* Tab 3: Available Pool */}

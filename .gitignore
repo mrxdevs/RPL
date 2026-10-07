@@ -43,3 +43,4 @@ next-env.d.ts
 # RPL live data files (never commit; seeds in src/data/seeds/ are committed)
 # git pull will never overwrite tournament data because these files are ignored.
 src/data/*.json
+.env*.local

@@ -27,6 +27,13 @@
     "username": "umpire",
     "passwordHash": "umpire123",
     "role": "umpire",
-    "displayName": "Anil Sharma"
+    "displayName": "Official Umpire"
+  },
+  {
+    "id": "usr_user_1",
+    "username": "user",
+    "passwordHash": "user123",
+    "role": "user",
+    "displayName": "Cricket Fan"
   }
 ]

@@ -1,37 +1,6 @@
 {
-  "currentLotPlayerId": "ply_27",
-  "currentBidAmount": 450000,
-  "currentLeadingTeamId": "team_3",
-  "history": [
-    {
-      "playerId": "ply_1",
-      "teamId": "team_1",
-      "soldPrice": 1200000,
-      "soldAt": "2026-10-04T10:15:00.000Z"
-    },
-    {
-      "playerId": "ply_12",
-      "teamId": "team_2",
-      "soldPrice": 1500000,
-      "soldAt": "2026-10-04T10:30:00.000Z"
-    },
-    {
-      "playerId": "ply_25",
-      "teamId": "team_4",
-      "soldPrice": 1750000,
-      "soldAt": "2026-10-04T10:45:00.000Z"
-    },
-    {
-      "playerId": "ply_3",
-      "teamId": "team_1",
-      "soldPrice": 1400000,
-      "soldAt": "2026-10-04T11:00:00.000Z"
-    },
-    {
-      "playerId": "ply_14",
-      "teamId": "team_2",
-      "soldPrice": 1100000,
-      "soldAt": "2026-10-04T11:15:00.000Z"
-    }
-  ]
+  "currentLot": null,
+  "completedLots": [],
+  "passedPlayerIds": [],
+  "auctionStatus": "pending"
 }

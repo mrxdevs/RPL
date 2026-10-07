@@ -156,6 +156,18 @@ export default function LoginPage() {
                   <div className="font-bold text-white font-display uppercase">Captain (Blasters)</div>
                   <div className="text-[10px] text-[var(--color-brand-teal-light)]">captain_blasters</div>
                 </button>
+
+                <button
+                  type="button"
+                  onClick={() => quickLogin("user", "user123")}
+                  className="col-span-2 p-2.5 rounded-lg bg-black/30 border border-white/5 hover:border-white/30 text-left transition-colors cursor-pointer flex items-center justify-between"
+                >
+                  <div>
+                    <div className="font-bold text-white font-display uppercase">General User / Fan</div>
+                    <div className="text-[10px] text-[var(--color-text-secondary)]">user (password: user123)</div>
+                  </div>
+                  <span className="text-[10px] font-semibold text-[var(--color-accent)] font-mono">Role: User</span>
+                </button>
               </div>
             </div>
           </CardBody>
