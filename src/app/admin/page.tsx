@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Team, Player, Match, PlayerRole } from "@/lib/types";
+import { Team, Player, Match, PlayerRole, AuctionState } from "@/lib/types";
 import { PageShell } from "@/components/layout/PageShell";
 import { Card, CardHeader, CardBody } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -16,6 +16,7 @@ export default function AdminDashboardPage() {
   const [teams, setTeams] = useState<Team[]>([]);
   const [players, setPlayers] = useState<Player[]>([]);
   const [matches, setMatches] = useState<Match[]>([]);
+  const [auction, setAuction] = useState<AuctionState>({ history: [] });
   const [isLoading, setIsLoading] = useState(true);
   const [statusMsg, setStatusMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
@@ -46,7 +47,7 @@ export default function AdminDashboardPage() {
   });
   const [auctionForm, setAuctionForm] = useState({ teamId: "", soldPrice: 0 });
 
-  const loadData = async () => {
+  const loadData = React.useCallback(async () => {
     try {
       const meRes = await fetch("/api/auth/me");
       const meJson = await meRes.json();
@@ -55,58 +56,52 @@ export default function AdminDashboardPage() {
         return;
       }
 
-      const [tRes, pRes, mRes] = await Promise.all([
+      const [tRes, pRes, mRes, aRes] = await Promise.all([
         fetch("/api/teams"),
         fetch("/api/players"),
         fetch("/api/matches"),
+        fetch("/api/auction"),
       ]);
-      const [tJson, pJson, mJson] = await Promise.all([tRes.json(), pRes.json(), mRes.json()]);
+      const [tJson, pJson, mJson, aJson] = await Promise.all([
+        tRes.json(),
+        pRes.json(),
+        mRes.json(),
+        aRes.json(),
+      ]);
 
       if (tJson.success) setTeams(tJson.data || []);
       if (pJson.success) setPlayers(pJson.data || []);
       if (mJson.success) setMatches(mJson.data || []);
+      if (aJson.success && aJson.data?.auction) setAuction(aJson.data.auction);
     } catch {
       setStatusMsg({ type: "error", text: "Failed to load admin data" });
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [router]);
 
   useEffect(() => {
     let isMounted = true;
-    (async () => {
-      try {
-        const meRes = await fetch("/api/auth/me");
-        const meJson = await meRes.json();
-        if (!isMounted) return;
-        if (!meJson.success || !meJson.data || meJson.data.role !== "admin") {
-          router.push("/login");
-          return;
-        }
 
-        const [tRes, pRes, mRes] = await Promise.all([
-          fetch("/api/teams"),
-          fetch("/api/players"),
-          fetch("/api/matches"),
-        ]);
-        const [tJson, pJson, mJson] = await Promise.all([tRes.json(), pRes.json(), mRes.json()]);
-
-        if (isMounted) {
-          if (tJson.success) setTeams(tJson.data || []);
-          if (pJson.success) setPlayers(pJson.data || []);
-          if (mJson.success) setMatches(mJson.data || []);
-        }
-      } catch {
-        if (isMounted) setStatusMsg({ type: "error", text: "Failed to load admin data" });
-      } finally {
-        if (isMounted) setIsLoading(false);
+    const initialize = async () => {
+      if (isMounted) {
+        await loadData();
       }
-    })();
+    };
+
+    initialize();
+
+    const interval = setInterval(() => {
+      if (isMounted) {
+        loadData();
+      }
+    }, 3000);
 
     return () => {
       isMounted = false;
+      clearInterval(interval);
     };
-  }, [router]);
+  }, [loadData]);
 
   const handleCreateTeam = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -235,6 +230,94 @@ export default function AdminDashboardPage() {
     }
   };
 
+  const handleStartAuctionLot = async (playerId: string) => {
+    try {
+      const res = await fetch("/api/auction", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "set_lot", playerId }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        setStatusMsg({ type: "error", text: json.error || "Failed to start auction lot" });
+        return;
+      }
+      setStatusMsg({ type: "success", text: "Player is now under the hammer on the live auction exchange!" });
+      loadData();
+    } catch {
+      setStatusMsg({ type: "error", text: "Network error starting auction lot" });
+    }
+  };
+
+  const handleCloseAndSellLot = async () => {
+    const currentLot = players.find((p) => p.id === auction.currentLotPlayerId);
+    const leadingTeam = teams.find((t) => t.id === auction.currentLeadingTeamId);
+    if (!currentLot) return;
+
+    if (!confirm(`Hammer Down: Confirm sale of ${currentLot.name} to ${leadingTeam?.name || "winning franchise"} for ${formatCurrency(auction.currentBidAmount || currentLot.basePrice)}?`)) {
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/auction", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "close_and_sell" }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        setStatusMsg({ type: "error", text: json.error || "Failed to finalize sale" });
+        return;
+      }
+      setStatusMsg({ type: "success", text: json.message || "Player sold successfully!" });
+      loadData();
+    } catch {
+      setStatusMsg({ type: "error", text: "Network error closing auction lot" });
+    }
+  };
+
+  const handleMarkLotUnsold = async () => {
+    const currentLot = players.find((p) => p.id === auction.currentLotPlayerId);
+    if (!currentLot) return;
+    if (!confirm(`Mark ${currentLot.name} as unsold?`)) return;
+
+    try {
+      const res = await fetch("/api/auction", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "mark_unsold", playerId: currentLot.id }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        setStatusMsg({ type: "error", text: json.error || "Failed to pass player" });
+        return;
+      }
+      setStatusMsg({ type: "success", text: "Player passed and marked unsold." });
+      loadData();
+    } catch {
+      setStatusMsg({ type: "error", text: "Network error marking player unsold" });
+    }
+  };
+
+  const handleCancelLot = async () => {
+    try {
+      const res = await fetch("/api/auction", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "cancel_lot" }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        setStatusMsg({ type: "error", text: json.error || "Failed to cancel lot" });
+        return;
+      }
+      setStatusMsg({ type: "success", text: "Active auction lot cancelled." });
+      loadData();
+    } catch {
+      setStatusMsg({ type: "error", text: "Network error cancelling auction lot" });
+    }
+  };
+
   const openCaptainModal = (team: Team) => {
     setSelectedTeamForCaptain(team);
     setSelectedCaptainId(team.captainId || "");
@@ -303,6 +386,9 @@ export default function AdminDashboardPage() {
 
   const availablePlayers = players.filter((p) => p.auctionStatus === "available");
   const soldPlayers = players.filter((p) => p.auctionStatus === "sold");
+  const currentLotPlayer = players.find((p) => p.id === auction.currentLotPlayerId);
+  const leadingTeam = teams.find((t) => t.id === auction.currentLeadingTeamId);
+  const currentBids = Array.isArray(auction.currentBids) ? auction.currentBids : [];
 
   return (
     <PageShell
@@ -340,6 +426,87 @@ export default function AdminDashboardPage() {
             Dismiss
           </button>
         </div>
+      )}
+
+      {/* Active Lot Live Hammer Controller (if a lot is under the hammer) */}
+      {currentLotPlayer && (
+        <Card variant="surface" className="border-[var(--color-brand-orange)]/60 bg-gradient-to-r from-[var(--color-brand-orange-dim)] via-[var(--color-brand-night-surface)] to-[var(--color-bg-surface)]">
+          <CardBody className="p-6 space-y-4">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold uppercase tracking-wider text-[var(--color-accent)] font-display">
+                  Active Auction Round • Under The Hammer
+                </span>
+                <Badge variant="live" withPulse size="sm">
+                  Live Bidding
+                </Badge>
+              </div>
+              <Link href="/auction">
+                <Button size="sm" variant="ghost">
+                  View Live Bidding Board →
+                </Button>
+              </Link>
+            </div>
+
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-4 border-b border-white/10">
+              <div>
+                <h3 className="text-2xl font-black font-display uppercase tracking-wide text-white">
+                  {currentLotPlayer.name}
+                </h3>
+                <div className="flex items-center gap-2 mt-1 text-xs text-[var(--color-text-secondary)]">
+                  <Badge variant="teal" size="sm">
+                    {currentLotPlayer.role}
+                  </Badge>
+                  <span>Base Price: <strong className="text-white font-score">{formatCurrency(currentLotPlayer.basePrice)}</strong></span>
+                  <span>•</span>
+                  <span>Total Bids Placed: <strong className="text-[var(--color-accent)] font-score">{currentBids.length}</strong></span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-6 font-score p-3.5 rounded-xl bg-black/40 border border-white/5">
+                <div>
+                  <span className="text-xs text-[var(--color-text-secondary)] block">Current Leading Bid</span>
+                  <span className="text-2xl font-black text-[var(--color-accent)]">
+                    {formatCurrency(auction.currentBidAmount || currentLotPlayer.basePrice)}
+                  </span>
+                </div>
+                <div className="pl-6 border-l border-white/10">
+                  <span className="text-xs text-[var(--color-text-secondary)] block">Leading Franchise</span>
+                  {leadingTeam ? (
+                    <span className="text-base font-bold text-white font-display uppercase">
+                      {leadingTeam.name}
+                    </span>
+                  ) : (
+                    <span className="text-xs text-[var(--color-text-secondary)] italic">
+                      Awaiting Bids
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Hammer Down Controls */}
+            <div className="flex flex-wrap items-center gap-3">
+              <Button
+                size="md"
+                variant="teal"
+                className="font-bold flex-1"
+                disabled={!leadingTeam}
+                onClick={handleCloseAndSellLot}
+              >
+                {leadingTeam
+                  ? `Hammer Down: Close Bid & Sell to ${leadingTeam.shortName} (${formatCurrency(auction.currentBidAmount || currentLotPlayer.basePrice)})`
+                  : "Awaiting First Bid (Cannot Sell)"}
+              </Button>
+              <Button size="md" variant="danger" onClick={handleMarkLotUnsold}>
+                Pass / Mark Unsold
+              </Button>
+              <Button size="md" variant="ghost" onClick={handleCancelLot}>
+                Cancel Lot
+              </Button>
+            </div>
+          </CardBody>
+        </Card>
       )}
 
       {/* Grid: Teams & Auction Management */}
@@ -423,26 +590,48 @@ export default function AdminDashboardPage() {
                 All players have been auctioned or no players registered.
               </div>
             ) : (
-              availablePlayers.map((p) => (
-                <div key={p.id} className="p-4 flex items-center justify-between gap-4">
-                  <div>
-                    <span className="font-bold text-white font-display text-sm">
-                      {p.name}
-                    </span>
-                    <div className="flex items-center gap-2 mt-0.5 text-xs">
-                      <Badge variant="teal" size="sm">
-                        {p.role}
-                      </Badge>
-                      <span className="text-[var(--color-text-secondary)] font-score">
-                        Base: {formatCurrency(p.basePrice)}
-                      </span>
+              availablePlayers.map((p) => {
+                const isUnderHammer = p.id === auction.currentLotPlayerId;
+
+                return (
+                  <div key={p.id} className="p-4 flex items-center justify-between gap-4">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-white font-display text-sm">
+                          {p.name}
+                        </span>
+                        {isUnderHammer && (
+                          <Badge variant="live" size="sm">
+                            Under Hammer
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 mt-0.5 text-xs">
+                        <Badge variant="teal" size="sm">
+                          {p.role}
+                        </Badge>
+                        <span className="text-[var(--color-text-secondary)] font-score">
+                          Base: {formatCurrency(p.basePrice)}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {!isUnderHammer && (
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => handleStartAuctionLot(p.id)}
+                        >
+                          Start Lot
+                        </Button>
+                      )}
+                      <Button size="sm" variant="primary" onClick={() => openAuctionModal(p)}>
+                        Direct Sell
+                      </Button>
                     </div>
                   </div>
-                  <Button size="sm" variant="primary" onClick={() => openAuctionModal(p)}>
-                    Sell to Team
-                  </Button>
-                </div>
-              ))
+                );
+              })
             )}
           </CardBody>
         </Card>

@@ -2,6 +2,8 @@ export interface AuctionBid {
   id: string;
   playerId: string;
   teamId: string;
+  teamName: string;
+  teamShortName: string;
   bidAmount: number;
   timestamp: string;
 }
@@ -17,5 +19,7 @@ export interface AuctionState {
   currentLotPlayerId?: string;
   currentBidAmount?: number;
   currentLeadingTeamId?: string;
+  currentBids?: AuctionBid[];
   history: AuctionRecord[];
 }
+

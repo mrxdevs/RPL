@@ -312,7 +312,7 @@ async function runTests() {
       }
     }
 
-    // 5.6 Schedule Tournament Fixture between Team A and Team B
+      // 5.6 Schedule Tournament Fixture between Team A and Team B
     if (teamAJson.data?.id && teamBJson.data?.id) {
       const fixtureRes = await fetch(`${BASE_URL}/api/matches`, {
         method: "POST",
@@ -331,6 +331,88 @@ async function runTests() {
         logPass(`Scheduled tournament fixture: ${fixtureJson.data.title} (${teamAJson.data.name} vs ${teamBJson.data.name})`);
       } else {
         logFail("Tournament fixture scheduling failed", JSON.stringify(fixtureJson));
+      }
+    }
+
+    // 5.7 Live Auction Interactive Bidding & Hammer Down Test
+    const p2Res = await fetch(`${BASE_URL}/api/players`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Cookie: adminCookie },
+      body: JSON.stringify({ name: "Arjun Reddy", role: "Batter", basePrice: 600000 }),
+    });
+    const p2Json = await p2Res.json();
+    if (p2Json.success && p2Json.data?.id) {
+      logPass(`Registered player: ${p2Json.data.name} for live auction testing`);
+
+      // 5.7.1 Admin puts player under the hammer
+      const setLotRes = await fetch(`${BASE_URL}/api/auction`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Cookie: adminCookie },
+        body: JSON.stringify({ action: "set_lot", playerId: p2Json.data.id }),
+      });
+      const setLotJson = await setLotRes.json();
+      if (setLotJson.success && setLotJson.data?.currentLotPlayerId === p2Json.data.id) {
+        logPass(`Admin placed ${p2Json.data.name} on auction block (Active Lot)`);
+      } else {
+        logFail("Failed to set active auction lot", JSON.stringify(setLotJson));
+      }
+
+      // 5.7.2 Team A places bid of ₹6,50,000
+      const bid1Res = await fetch(`${BASE_URL}/api/auction`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Cookie: adminCookie },
+        body: JSON.stringify({
+          action: "bid",
+          playerId: p2Json.data.id,
+          teamId: teamAJson.data.id,
+          bidAmount: 650000,
+        }),
+      });
+      const bid1Json = await bid1Res.json();
+      if (bid1Json.success && bid1Json.data?.currentBidAmount === 650000) {
+        logPass(`Live Bid 1: Chennai Strikers bid ₹6,50,000`);
+      } else {
+        logFail("Live Bid 1 failed", JSON.stringify(bid1Json));
+      }
+
+      // 5.7.3 Team B places counter bid of ₹7,50,000
+      const bid2Res = await fetch(`${BASE_URL}/api/auction`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Cookie: adminCookie },
+        body: JSON.stringify({
+          action: "bid",
+          playerId: p2Json.data.id,
+          teamId: teamBJson.data.id,
+          bidAmount: 750000,
+        }),
+      });
+      const bid2Json = await bid2Res.json();
+      if (bid2Json.success && bid2Json.data?.currentBidAmount === 750000 && bid2Json.data?.currentLeadingTeamId === teamBJson.data.id) {
+        logPass(`Live Bid 2: Bangalore Dynamos counter-bid ₹7,50,000 (Leading, ${bid2Json.data.currentBids?.length} bids logged)`);
+      } else {
+        logFail("Live Bid 2 failed", JSON.stringify(bid2Json));
+      }
+
+      // 5.7.4 Admin hammers down and sells to winning bidder (Team B)
+      const closeRes = await fetch(`${BASE_URL}/api/auction`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Cookie: adminCookie },
+        body: JSON.stringify({ action: "close_and_sell" }),
+      });
+      const closeJson = await closeRes.json();
+      if (closeJson.success) {
+        logPass(`Hammer Down: Sold ${p2Json.data.name} to Bangalore Dynamos for ₹7,50,000`);
+      } else {
+        logFail("Hammer Down close_and_sell failed", JSON.stringify(closeJson));
+      }
+
+      // Verify active lot is cleared
+      const checkAuctionRes = await fetch(`${BASE_URL}/api/auction`);
+      const checkAuctionJson = await checkAuctionRes.json();
+      if (!checkAuctionJson.data?.auction?.currentLotPlayerId) {
+        logPass("Active auction lot cleared and ready for next round");
+      } else {
+        logFail("Auction lot not cleared after sale", JSON.stringify(checkAuctionJson));
       }
     }
   }

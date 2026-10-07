@@ -1,11 +1,13 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Team, Player, PlayerRole, SessionData } from "@/lib/types";
 import { PageShell } from "@/components/layout/PageShell";
 import { Card, CardHeader, CardBody } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
 import { formatCurrency } from "@/lib/cricket/cricketCalculations";
 
 export default function CaptainDashboardPage() {
@@ -13,6 +15,7 @@ export default function CaptainDashboardPage() {
   const [session, setSession] = useState<SessionData | null>(null);
   const [team, setTeam] = useState<Team | null>(null);
   const [squad, setSquad] = useState<Player[]>([]);
+  const [hasActiveAuction, setHasActiveAuction] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [statusMsg, setStatusMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
@@ -39,14 +42,27 @@ export default function CaptainDashboardPage() {
           return;
         }
 
-        const teamRes = await fetch(`/api/teams/${teamId}`);
-        const teamJson = await teamRes.json();
+        const [teamRes, auctionRes] = await Promise.all([
+          fetch(`/api/teams/${teamId}`),
+          fetch("/api/auction"),
+        ]);
+        const [teamJson, auctionJson] = await Promise.all([
+          teamRes.json(),
+          auctionRes.json(),
+        ]);
+
         if (isMounted && teamJson.success && teamJson.data) {
           setTeam(teamJson.data.team);
           const sortedSquad = [...teamJson.data.squad].sort(
             (a, b) => (a.battingOrder || 99) - (b.battingOrder || 99)
           );
           setSquad(sortedSquad);
+        }
+
+        if (isMounted && auctionJson.success && auctionJson.data?.auction?.currentLotPlayerId) {
+          setHasActiveAuction(true);
+        } else if (isMounted) {
+          setHasActiveAuction(false);
         }
       } catch {
         if (isMounted) setStatusMsg({ type: "error", text: "Failed to load captain squad data." });
@@ -56,9 +72,11 @@ export default function CaptainDashboardPage() {
     }
 
     loadData();
+    const interval = setInterval(loadData, 4000);
 
     return () => {
       isMounted = false;
+      clearInterval(interval);
     };
   }, [router]);
 
@@ -154,6 +172,30 @@ export default function CaptainDashboardPage() {
           >
             Dismiss
           </button>
+        </div>
+      )}
+
+      {/* Live Auction Alert Banner */}
+      {hasActiveAuction && (
+        <div className="p-4 rounded-xl bg-gradient-to-r from-[var(--color-brand-orange-dim)] via-[var(--color-brand-night-surface)] to-[var(--color-bg-surface)] border border-[var(--color-brand-orange)]/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <Badge variant="live" withPulse size="sm">
+              Live Bidding Open
+            </Badge>
+            <div>
+              <span className="font-bold text-white text-sm block">
+                Player Under The Hammer!
+              </span>
+              <p className="text-xs text-[var(--color-text-secondary)]">
+                An active auction round is underway on the exchange. Submit franchise bids for {team.name}.
+              </p>
+            </div>
+          </div>
+          <Link href="/auction">
+            <Button size="sm" variant="primary">
+              Enter Live Auction to Bid →
+            </Button>
+          </Link>
         </div>
       )}
 
