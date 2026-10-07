@@ -21,6 +21,9 @@ export default function AdminDashboardPage() {
 
   // Modals
   const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
+  const [isCaptainModalOpen, setIsCaptainModalOpen] = useState(false);
+  const [selectedTeamForCaptain, setSelectedTeamForCaptain] = useState<Team | null>(null);
+  const [selectedCaptainId, setSelectedCaptainId] = useState<string>("");
   const [isPlayerModalOpen, setIsPlayerModalOpen] = useState(false);
   const [isMatchModalOpen, setIsMatchModalOpen] = useState(false);
   const [isAuctionModalOpen, setIsAuctionModalOpen] = useState(false);
@@ -224,10 +227,60 @@ export default function AdminDashboardPage() {
     }
   };
 
+  const openCaptainModal = (team: Team) => {
+    setSelectedTeamForCaptain(team);
+    setSelectedCaptainId(team.captainId || "");
+    setIsCaptainModalOpen(true);
+  };
+
+  const handleAssignCaptain = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedTeamForCaptain) return;
+
+    try {
+      const res = await fetch(`/api/teams/${selectedTeamForCaptain.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ captainId: selectedCaptainId || null }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        setStatusMsg({ type: "error", text: json.error || "Failed to assign captain" });
+        return;
+      }
+      setStatusMsg({ type: "success", text: `Captain assigned for ${selectedTeamForCaptain.name}!` });
+      setIsCaptainModalOpen(false);
+      setSelectedTeamForCaptain(null);
+      loadData();
+    } catch {
+      setStatusMsg({ type: "error", text: "Network error updating captain assignment" });
+    }
+  };
+
   const openAuctionModal = (p: Player) => {
+    if (teams.length === 0) {
+      setStatusMsg({ type: "error", text: "Please create at least one franchise team before selling players." });
+      return;
+    }
     setSelectedAuctionPlayer(p);
     setAuctionForm({ teamId: teams[0]?.id || "", soldPrice: p.basePrice });
     setIsAuctionModalOpen(true);
+  };
+
+  const openMatchModal = () => {
+    if (teams.length < 2) {
+      setStatusMsg({ type: "error", text: "At least two franchise teams must be created before scheduling tournament fixtures." });
+      return;
+    }
+    setMatchForm({
+      title: `Match ${matches.length + 1}`,
+      teamAId: teams[0]?.id || "",
+      teamBId: teams[1]?.id || "",
+      scheduledAt: "2026-10-08T14:00",
+      venue: "Raptee Arena, Chennai",
+      format: "T20",
+    });
+    setIsMatchModalOpen(true);
   };
 
   if (isLoading) {
@@ -296,28 +349,51 @@ export default function AdminDashboardPage() {
             </div>
           </CardHeader>
           <CardBody className="divide-y divide-white/5 p-0">
-            {teams.map((t) => (
-              <div key={t.id} className="p-4 flex items-center justify-between gap-4">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-white font-display uppercase">
-                      {t.name} ({t.shortName})
-                    </span>
-                    <Badge variant={t.playerIds.length >= 11 ? "win" : "upcoming"} size="sm">
-                      {t.playerIds.length}/11 Players
-                    </Badge>
-                  </div>
-                  <div className="text-xs text-[var(--color-text-secondary)] mt-0.5 font-score">
-                    Remaining Cap: <strong className="text-[var(--color-accent)]">{formatCurrency(t.remainingBudget)}</strong>
-                  </div>
-                </div>
-                <Link href={`/teams/${t.id}`}>
-                  <Button size="sm" variant="ghost">
-                    Roster →
-                  </Button>
-                </Link>
+            {teams.length === 0 ? (
+              <div className="p-8 text-center text-sm text-[var(--color-text-secondary)]">
+                No franchise teams created yet. Click &quot;New Team&quot; above to begin.
               </div>
-            ))}
+            ) : (
+              teams.map((t) => {
+                const captain = players.find((p) => p.id === t.captainId);
+                return (
+                  <div key={t.id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-white font-display uppercase">
+                          {t.name} ({t.shortName})
+                        </span>
+                        <Badge variant={t.playerIds.length >= 11 ? "win" : "upcoming"} size="sm">
+                          {t.playerIds.length}/11 Players
+                        </Badge>
+                      </div>
+                      <div className="text-xs text-[var(--color-text-secondary)] mt-1 font-score space-x-2">
+                        <span>
+                          Captain:{" "}
+                          <strong className={captain ? "text-[var(--color-brand-orange)] font-semibold" : "text-[var(--color-text-disabled)]"}>
+                            {captain?.name || "Not Assigned"}
+                          </strong>
+                        </span>
+                        <span>•</span>
+                        <span>
+                          Remaining Cap: <strong className="text-[var(--color-accent)]">{formatCurrency(t.remainingBudget)}</strong>
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button size="sm" variant="secondary" onClick={() => openCaptainModal(t)}>
+                        Assign Captain
+                      </Button>
+                      <Link href={`/teams/${t.id}`}>
+                        <Button size="sm" variant="ghost">
+                          Roster →
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                );
+              })
+            )}
           </CardBody>
         </Card>
 
@@ -430,13 +506,18 @@ export default function AdminDashboardPage() {
             <h3 className="text-lg font-bold font-display uppercase tracking-wide text-white">
               Tournament Fixture Schedule ({matches.length})
             </h3>
-            <Button size="sm" variant="secondary" onClick={() => setIsMatchModalOpen(true)}>
+            <Button size="sm" variant="secondary" onClick={openMatchModal}>
               Schedule New Match
             </Button>
           </div>
         </CardHeader>
         <CardBody className="divide-y divide-white/5 p-0">
-          {matches.map((m) => {
+          {matches.length === 0 ? (
+            <div className="p-8 text-center text-sm text-[var(--color-text-secondary)]">
+              No tournament matches scheduled yet. Click &quot;Schedule New Match&quot; above to add fixtures.
+            </div>
+          ) : (
+            matches.map((m) => {
             const teamA = teams.find((t) => t.id === m.teamAId);
             const teamB = teams.find((t) => t.id === m.teamBId);
 
@@ -471,7 +552,8 @@ export default function AdminDashboardPage() {
                 </div>
               </div>
             );
-          })}
+          })
+        )}
         </CardBody>
       </Card>
 
@@ -525,6 +607,50 @@ export default function AdminDashboardPage() {
 
           <Button type="submit" variant="primary" size="md" className="w-full">
             Register Franchise
+          </Button>
+        </form>
+      </Modal>
+
+      {/* Modal: Assign Captain */}
+      <Modal
+        isOpen={isCaptainModalOpen}
+        onClose={() => setIsCaptainModalOpen(false)}
+        title={`Assign Captain: ${selectedTeamForCaptain?.name || "Team"}`}
+      >
+        <form onSubmit={handleAssignCaptain} className="space-y-4">
+          <div className="p-3 rounded-lg bg-black/20 text-xs text-[var(--color-text-secondary)]">
+            Designate the team captain for <span className="text-white font-semibold">{selectedTeamForCaptain?.name}</span>. The captain will be authorized to configure match batting lineups and tactical roles.
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-secondary)] font-display">
+              Select Captain
+            </label>
+            <select
+              value={selectedCaptainId}
+              onChange={(e) => setSelectedCaptainId(e.target.value)}
+              className="w-full px-3 py-2 rounded-lg bg-[var(--color-bg-base)] border border-[var(--color-border)] text-sm text-white"
+            >
+              <option value="">No Captain Assigned (Unassign)</option>
+              {players.length === 0 ? (
+                <option value="" disabled>No registered players available</option>
+              ) : (
+                players.map((p) => {
+                  const isAlreadyInTeam = p.teamId === selectedTeamForCaptain?.id;
+                  const isOtherTeam = p.teamId && p.teamId !== selectedTeamForCaptain?.id;
+                  const otherTeamName = isOtherTeam ? teams.find((t) => t.id === p.teamId)?.name : "";
+                  return (
+                    <option key={p.id} value={p.id}>
+                      {p.name} ({p.role}) {isAlreadyInTeam ? "• Current Squad" : isOtherTeam ? `• In ${otherTeamName}` : "• Available Pool"}
+                    </option>
+                  );
+                })
+              )}
+            </select>
+          </div>
+
+          <Button type="submit" variant="primary" size="md" className="w-full">
+            Confirm Captain Assignment
           </Button>
         </form>
       </Modal>
@@ -656,7 +782,7 @@ export default function AdminDashboardPage() {
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
               <label className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-secondary)] font-display">
-                Team A (Min 11 players)
+                Team A
               </label>
               <select
                 required
@@ -675,7 +801,7 @@ export default function AdminDashboardPage() {
 
             <div className="space-y-1">
               <label className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-secondary)] font-display">
-                Team B (Min 11 players)
+                Team B
               </label>
               <select
                 required

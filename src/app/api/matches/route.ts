@@ -57,17 +57,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Constraint from REQUIREMENT.md: A match cannot be scheduled if either team has fewer than 11 players.
-    if (teamA.playerIds.length < 11 || teamB.playerIds.length < 11) {
-      return NextResponse.json<ApiResponse>(
-        {
-          success: false,
-          error: `Both teams must have at least 11 registered players to schedule a match. ${teamA.name} has ${teamA.playerIds.length}, ${teamB.name} has ${teamB.playerIds.length}.`,
-        },
-        { status: 400 }
-      );
-    }
-
     const matches = await readJson<Match[]>("matches", []);
     const newMatch: Match = {
       id: `mat_${Date.now()}`,

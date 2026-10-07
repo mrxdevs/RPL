@@ -56,27 +56,40 @@ export async function PUT(
 
     const currentTeam = teams[teamIndex];
     const { captainId, name, shortName, primaryColor } = body;
+    const effectiveCaptainId = captainId === "" || captainId === null ? undefined : (captainId ?? currentTeam.captainId);
 
     const updatedTeam: Team = {
       ...currentTeam,
       name: name ?? currentTeam.name,
       shortName: shortName ?? currentTeam.shortName,
-      captainId: captainId ?? currentTeam.captainId,
+      captainId: effectiveCaptainId,
       primaryColor: primaryColor ?? currentTeam.primaryColor,
     };
+
+    if (effectiveCaptainId) {
+      const players = await readJson<Player[]>("players", []);
+      const playerIndex = players.findIndex((p) => p.id === effectiveCaptainId);
+      if (playerIndex !== -1) {
+        if (!updatedTeam.playerIds.includes(effectiveCaptainId)) {
+          updatedTeam.playerIds.push(effectiveCaptainId);
+        }
+        players[playerIndex].teamId = teamId;
+        await writeJson("players", players);
+      }
+    }
 
     teams[teamIndex] = updatedTeam;
     await writeJson("teams", teams);
 
-    if (captainId && captainId !== currentTeam.captainId) {
+    if (effectiveCaptainId && effectiveCaptainId !== currentTeam.captainId) {
       const players = await readJson<Player[]>("players", []);
-      const capPlayer = players.find((p) => p.id === captainId);
+      const capPlayer = players.find((p) => p.id === effectiveCaptainId);
       await logActivity({
         category: "team_update",
         title: "Captain Appointed",
         description: `${capPlayer?.name || "Player"} appointed as captain of ${updatedTeam.name}.`,
         teamId,
-        playerId: captainId,
+        playerId: effectiveCaptainId,
       });
     }
 

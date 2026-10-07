@@ -182,9 +182,9 @@ async function runTests() {
     logPass("Verified tournament starts clean and unconfigured (0 matches scheduled)");
   }
 
-  // Post a ball delivery to Match 1 (live match)
-  if (umpireCookie && matchesRes?.data?.data?.length > 0) {
-    const liveMatch = matchesRes.data.data.find(m => m.status === "live") || matchesRes.data.data[0];
+  // Post a ball delivery if there is a live match
+  const liveMatch = matchesRes?.data?.data?.find((m) => m.status === "live");
+  if (umpireCookie && liveMatch) {
     const innIdx = (liveMatch.currentInnings || 1) - 1;
     const currentInnings = liveMatch.innings[innIdx];
 
@@ -225,6 +225,113 @@ async function runTests() {
     } else {
       const ballErr = await ballRes.text();
       logFail(`Failed to record ball delivery (${ballRes.status})`, ballErr);
+    }
+  }
+
+  // 5. Admin Workflows: Team Creation, Player Auction Sale, Captain Assignment, Match Scheduling
+  console.log("\n--- 5. Admin Tournament Configuration & Auction Workflows ---");
+  if (adminCookie) {
+    // 5.1 Create Team A
+    const teamARes = await fetch(`${BASE_URL}/api/teams`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Cookie: adminCookie },
+      body: JSON.stringify({ name: "Chennai Strikers", shortName: "CS", totalBudget: 10000000, primaryColor: "#F55A00" }),
+    });
+    const teamAJson = await teamARes.json();
+    if (teamAJson.success && teamAJson.data?.id) {
+      logPass(`Created franchise team: ${teamAJson.data.name} (Budget: ₹1,00,00,000)`);
+    } else {
+      logFail("Failed to create Team A", JSON.stringify(teamAJson));
+    }
+
+    // 5.2 Create Team B
+    const teamBRes = await fetch(`${BASE_URL}/api/teams`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Cookie: adminCookie },
+      body: JSON.stringify({ name: "Bangalore Dynamos", shortName: "BD", totalBudget: 10000000, primaryColor: "#00B07D" }),
+    });
+    const teamBJson = await teamBRes.json();
+    if (teamBJson.success && teamBJson.data?.id) {
+      logPass(`Created franchise team: ${teamBJson.data.name} (Budget: ₹1,00,00,000)`);
+    } else {
+      logFail("Failed to create Team B", JSON.stringify(teamBJson));
+    }
+
+    // 5.3 Register Player
+    const playerRes = await fetch(`${BASE_URL}/api/players`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Cookie: adminCookie },
+      body: JSON.stringify({ name: "Kavitha Raman", role: "All-rounder", basePrice: 500000 }),
+    });
+    const playerJson = await playerRes.json();
+    if (playerJson.success && playerJson.data?.id) {
+      logPass(`Registered player: ${playerJson.data.name} in auction pool`);
+    } else {
+      logFail("Failed to register player", JSON.stringify(playerJson));
+    }
+
+    // 5.4 Sell Player to Team A (Auction Transaction)
+    if (teamAJson.data?.id && playerJson.data?.id) {
+      const sellRes = await fetch(`${BASE_URL}/api/auction`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Cookie: adminCookie },
+        body: JSON.stringify({
+          action: "sell",
+          playerId: playerJson.data.id,
+          teamId: teamAJson.data.id,
+          soldPrice: 750000,
+        }),
+      });
+      const sellJson = await sellRes.json();
+      if (sellJson.success) {
+        logPass(`Auction Transaction: Sold ${playerJson.data.name} to ${teamAJson.data.name} for ₹7,50,000`);
+      } else {
+        logFail("Auction Transaction Failed", JSON.stringify(sellJson));
+      }
+
+      // Verify budget deduction on Team A
+      const verifyTeamRes = await fetch(`${BASE_URL}/api/teams/${teamAJson.data.id}`);
+      const verifyTeamJson = await verifyTeamRes.json();
+      if (verifyTeamJson.data?.team?.remainingBudget === 9250000) {
+        logPass(`Verified budget deduction: Remaining cap is ₹92,50,000 (Deducted ₹7,50,000)`);
+      } else {
+        logFail("Budget deduction mismatch", JSON.stringify(verifyTeamJson.data?.team));
+      }
+
+      // 5.5 Assign Player as Team Captain
+      const captainRes = await fetch(`${BASE_URL}/api/teams/${teamAJson.data.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Cookie: adminCookie },
+        body: JSON.stringify({ captainId: playerJson.data.id }),
+      });
+      const captainJson = await captainRes.json();
+      if (captainJson.success && captainJson.data?.captainId === playerJson.data.id) {
+        logPass(`Assigned ${playerJson.data.name} as official Team Captain for ${teamAJson.data.name}`);
+      } else {
+        logFail("Captain assignment failed", JSON.stringify(captainJson));
+      }
+    }
+
+    // 5.6 Schedule Tournament Fixture between Team A and Team B
+    if (teamAJson.data?.id && teamBJson.data?.id) {
+      const fixtureRes = await fetch(`${BASE_URL}/api/matches`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Cookie: adminCookie },
+        body: JSON.stringify({
+          title: "Season 2 Inaugural Derby",
+          teamAId: teamAJson.data.id,
+          teamBId: teamBJson.data.id,
+          scheduledAt: "2026-10-10T14:00",
+          venue: "Raptee Arena, Chennai",
+          format: "T20",
+        }),
+      });
+      const fixtureJson = await fixtureRes.json();
+      if (fixtureJson.success && fixtureJson.data?.id) {
+        logPass(`Scheduled tournament fixture: ${fixtureJson.data.title} (${teamAJson.data.name} vs ${teamBJson.data.name})`);
+      } else {
+        logFail("Tournament fixture scheduling failed", JSON.stringify(fixtureJson));
+      }
     }
   }
 

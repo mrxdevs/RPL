@@ -1,6 +1,6 @@
 {
-  "currentLot": null,
-  "completedLots": [],
-  "passedPlayerIds": [],
-  "auctionStatus": "pending"
+  "currentLotPlayerId": null,
+  "currentBidAmount": 0,
+  "currentLeadingTeamId": null,
+  "history": []
 }

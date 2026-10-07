@@ -103,7 +103,8 @@ export async function POST(req: NextRequest) {
         soldPrice: price,
         soldAt: new Date().toISOString(),
       };
-      auction.history = [record, ...auction.history];
+      const existingHistory = Array.isArray(auction.history) ? auction.history : [];
+      auction.history = [record, ...existingHistory];
       auction.currentLotPlayerId = undefined;
       auction.currentBidAmount = undefined;
       auction.currentLeadingTeamId = undefined;
@@ -173,7 +174,8 @@ export async function POST(req: NextRequest) {
       players[playerIndex] = player;
 
       // Clean auction history for this player
-      auction.history = auction.history.filter((h) => h.playerId !== player.id);
+      const currentHistory = Array.isArray(auction.history) ? auction.history : [];
+      auction.history = currentHistory.filter((h) => h.playerId !== player.id);
 
       await writeJson("players", players);
       await writeJson("auction", auction);
