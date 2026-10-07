@@ -1,0 +1,182 @@
+/**
+ * theme.css
+ * RPL - Raptee Premier League Design System
+ *
+ * This file is the single source of truth for all visual tokens.
+ * Every color, radius, shadow, spacing scale, and font reference
+ * used across the UI must trace back to a variable defined here.
+ *
+ * Import order in globals.css:
+ *   @import "./theme.css";        (tokens first)
+ *   @tailwind base;
+ *   @tailwind components;
+ *   @tailwind utilities;
+ *
+ * Brand reference: RPL Season 2 poster
+ * Primary palette: Flame orange, Stadium teal, Bolt yellow, Night base
+ */
+
+:root {
+  /* =========================================================
+     BRAND COLORS
+     Extracted directly from the RPL Season 2 visual identity.
+     ========================================================= */
+
+  /* Flame Orange - primary brand energy, CTA backgrounds, hero fills */
+  --color-brand-orange:        #F55A00;
+  --color-brand-orange-light:  #FF7A2F;
+  --color-brand-orange-dim:    #C04400;
+
+  /* Bolt Yellow - RPL wordmark, accent highlights, live badges */
+  --color-brand-yellow:        #FFD600;
+  --color-brand-yellow-light:  #FFE566;
+  --color-brand-yellow-dim:    #C8A800;
+
+  /* Stadium Teal - outfield, surface backgrounds, secondary UI */
+  --color-brand-teal:          #00B07D;
+  --color-brand-teal-light:    #00D498;
+  --color-brand-teal-dim:      #007A57;
+
+  /* Night Base - page backgrounds, cards, the dark arena feel */
+  --color-brand-night:         #0B1512;
+  --color-brand-night-mid:     #111E1A;
+  --color-brand-night-surface: #182620;
+
+  /* =========================================================
+     SEMANTIC BACKGROUND TOKENS
+     Use these in components, never the raw brand colors above.
+     ========================================================= */
+
+  --color-bg-base:      var(--color-brand-night);        /* Page root */
+  --color-bg-surface:   var(--color-brand-night-mid);    /* Cards, panels */
+  --color-bg-elevated:  var(--color-brand-night-surface);/* Dropdowns, modals */
+  --color-bg-hero:      var(--color-brand-orange);       /* Landing hero */
+
+  /* =========================================================
+     BORDER TOKENS
+     ========================================================= */
+
+  --color-border:        rgba(0, 176, 125, 0.18);  /* Subtle teal glow */
+  --color-border-strong: rgba(0, 176, 125, 0.45);  /* Active, focused */
+  --color-border-accent: rgba(255, 214, 0, 0.35);  /* Yellow emphasis */
+
+  /* =========================================================
+     ACCENT TOKENS
+     Yellow is the primary interactive accent (buttons, links, focus).
+     ========================================================= */
+
+  --color-accent:        var(--color-brand-yellow);
+  --color-accent-hover:  var(--color-brand-yellow-light);
+  --color-accent-muted:  rgba(255, 214, 0, 0.12);
+  --color-accent-orange: var(--color-brand-orange);
+  --color-accent-teal:   var(--color-brand-teal);
+
+  /* =========================================================
+     TEXT TOKENS
+     ========================================================= */
+
+  --color-text-primary:   #F2F2F2;                    /* Headings, main body */
+  --color-text-secondary: rgba(242, 242, 242, 0.55);  /* Labels, captions */
+  --color-text-disabled:  rgba(242, 242, 242, 0.28);  /* Inactive elements */
+  --color-text-inverse:   #0B1512;                    /* Text on yellow/orange */
+  --color-text-accent:    var(--color-brand-yellow);  /* Highlighted values */
+  --color-text-teal:      var(--color-brand-teal);    /* Secondary emphasis */
+
+  /* =========================================================
+     STATUS TOKENS
+     Pair every status color with a text label in the UI.
+     ========================================================= */
+
+  --color-status-live:      #FF3B3B;   /* Live match - red pulse */
+  --color-status-live-bg:   rgba(255, 59, 59, 0.12);
+  --color-status-win:       #00B07D;   /* Win - brand teal */
+  --color-status-win-bg:    rgba(0, 176, 125, 0.12);
+  --color-status-loss:      #C04400;   /* Loss - dimmed orange */
+  --color-status-loss-bg:   rgba(192, 68, 0, 0.12);
+  --color-status-draw:      #FFD600;   /* Draw - bolt yellow */
+  --color-status-draw-bg:   rgba(255, 214, 0, 0.12);
+  --color-status-upcoming:  rgba(242, 242, 242, 0.45);
+  --color-status-upcoming-bg: rgba(242, 242, 242, 0.06);
+
+  /* =========================================================
+     TYPOGRAPHY
+     Two families only. Scores and stats use mono.
+     ========================================================= */
+
+  /* Display and body: Barlow Condensed for headings (matches RPL poster),
+     Inter for body text. Both loaded via Google Fonts in layout.tsx. */
+  --font-display: var(--font-barlow-condensed), 'Barlow Condensed', ui-sans-serif, system-ui, sans-serif;
+  --font-body:    var(--font-inter), 'Inter', ui-sans-serif, system-ui, sans-serif;
+
+  /* Scores, over counts, run rates: monospace so digits never shift width */
+  --font-mono:    var(--font-jetbrains-mono), 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+
+  /* Font weights */
+  --fw-regular:     400;
+  --fw-medium:      500;
+  --fw-semibold:    600;
+  --fw-bold:        700;
+  --fw-extrabold:   800;
+  --fw-black:       900;   /* Display headings, RPL wordmark */
+
+  /* Letter spacing */
+  --ls-tight:  -0.02em;  /* Large display type */
+  --ls-normal:  0;
+  --ls-wide:    0.06em;  /* Table headers, badges, caps labels */
+  --ls-wider:   0.12em;  /* "RAPTEE PREMIER LEAGUE" subtitle style */
+
+  /* =========================================================
+     SPACING
+     All spacing derives from a 4px base unit.
+     Use Tailwind scale classes (p-4 = 16px, p-6 = 24px, etc.)
+     Only the max-width wrapper and section padding are tokenised here.
+     ========================================================= */
+
+  --container-max:    1280px;
+  --container-pad:    clamp(1rem, 5vw, 2.5rem);
+  --section-gap:      clamp(3rem, 8vw, 6rem);
+
+  /* =========================================================
+     BORDER RADIUS
+     ========================================================= */
+
+  --radius-sm:   6px;   /* Badges, tags */
+  --radius-md:   12px;  /* Buttons */
+  --radius-lg:   16px;  /* Cards */
+  --radius-xl:   24px;  /* Hero panels, large cards */
+  --radius-full: 9999px;/* Pills, avatars */
+
+  /* =========================================================
+     SHADOWS
+     Glow shadows reinforce the electric brand feel.
+     ========================================================= */
+
+  --shadow-sm:          0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-md:          0 4px 16px rgba(0, 0, 0, 0.5);
+  --shadow-lg:          0 8px 32px rgba(0, 0, 0, 0.6);
+  --shadow-glow-yellow: 0 0 24px rgba(255, 214, 0, 0.25);
+  --shadow-glow-orange: 0 0 32px rgba(245, 90, 0, 0.35);
+  --shadow-glow-teal:   0 0 20px rgba(0, 176, 125, 0.25);
+
+  /* =========================================================
+     MOTION
+     Transitions follow the RPL energy: fast in, slightly slower out.
+     ========================================================= */
+
+  --duration-fast:    120ms;
+  --duration-base:    200ms;
+  --duration-slow:    350ms;
+  --ease-out:         cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out:      cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* =========================================================
+     Z-INDEX SCALE
+     ========================================================= */
+
+  --z-base:    0;
+  --z-raised:  10;
+  --z-overlay: 100;
+  --z-modal:   200;
+  --z-toast:   300;
+  --z-tooltip: 400;
+}

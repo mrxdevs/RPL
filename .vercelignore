@@ -1,0 +1,15 @@
+# Vercel deployment exclusions for RPL
+#
+# Live data files are LOCAL ONLY.
+# They are never uploaded to Vercel on any deployment.
+# The only data Vercel sees is src/data/seeds/, which is
+# promoted intentionally by running: npm run data:publish
+#
+# This means a deployment can NEVER overwrite or corrupt
+# the data you are actively working with locally.
+
+src/data/*.json
+
+# Development tooling not needed on Vercel
+scripts/
+*.mjs
