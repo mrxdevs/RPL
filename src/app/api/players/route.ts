@@ -94,9 +94,10 @@ export async function POST(req: NextRequest) {
       data: newPlayer,
       message: "Player registered successfully",
     });
-  } catch {
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Failed to register player";
     return NextResponse.json<ApiResponse>(
-      { success: false, error: "Failed to register player" },
+      { success: false, error: message },
       { status: 500 }
     );
   }

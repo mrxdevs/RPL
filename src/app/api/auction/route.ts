@@ -228,9 +228,10 @@ export async function POST(req: NextRequest) {
       { success: false, error: "Invalid auction action" },
       { status: 400 }
     );
-  } catch {
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Auction transaction failed";
     return NextResponse.json<ApiResponse>(
-      { success: false, error: "Auction transaction failed" },
+      { success: false, error: message },
       { status: 500 }
     );
   }

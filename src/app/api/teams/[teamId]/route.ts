@@ -70,6 +70,16 @@ export async function PUT(
       const players = await readJson<Player[]>("players", []);
       const playerIndex = players.findIndex((p) => p.id === effectiveCaptainId);
       if (playerIndex !== -1) {
+        const oldTeamId = players[playerIndex].teamId;
+        if (oldTeamId && oldTeamId !== teamId) {
+          const oldTeamIndex = teams.findIndex((t) => t.id === oldTeamId);
+          if (oldTeamIndex !== -1) {
+            teams[oldTeamIndex].playerIds = teams[oldTeamIndex].playerIds.filter((pid) => pid !== effectiveCaptainId);
+            if (teams[oldTeamIndex].captainId === effectiveCaptainId) {
+              teams[oldTeamIndex].captainId = undefined;
+            }
+          }
+        }
         if (!updatedTeam.playerIds.includes(effectiveCaptainId)) {
           updatedTeam.playerIds.push(effectiveCaptainId);
         }
@@ -98,9 +108,10 @@ export async function PUT(
       data: updatedTeam,
       message: "Team updated successfully",
     });
-  } catch {
+  } catch (err: unknown) {
+    const errorMsg = err instanceof Error ? err.message : "Failed to update team";
     return NextResponse.json<ApiResponse>(
-      { success: false, error: "Failed to update team" },
+      { success: false, error: errorMsg },
       { status: 500 }
     );
   }

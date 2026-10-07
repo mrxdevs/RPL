@@ -76,9 +76,10 @@ export async function POST(req: NextRequest) {
       data: newTeam,
       message: "Team created successfully",
     });
-  } catch {
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Failed to create team";
     return NextResponse.json<ApiResponse>(
-      { success: false, error: "Failed to create team" },
+      { success: false, error: message },
       { status: 500 }
     );
   }

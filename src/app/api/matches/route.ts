@@ -88,9 +88,10 @@ export async function POST(req: NextRequest) {
       data: newMatch,
       message: "Match scheduled successfully",
     });
-  } catch {
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Failed to schedule match";
     return NextResponse.json<ApiResponse>(
-      { success: false, error: "Failed to schedule match" },
+      { success: false, error: message },
       { status: 500 }
     );
   }

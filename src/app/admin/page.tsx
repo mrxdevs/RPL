@@ -154,6 +154,14 @@ export default function AdminDashboardPage() {
 
   const handleScheduleMatch = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!matchForm.teamAId || !matchForm.teamBId) {
+      setStatusMsg({ type: "error", text: "Both Team A and Team B must be selected." });
+      return;
+    }
+    if (matchForm.teamAId === matchForm.teamBId) {
+      setStatusMsg({ type: "error", text: "Team A and Team B cannot be the same franchise." });
+      return;
+    }
     try {
       const res = await fetch("/api/matches", {
         method: "POST",
@@ -308,7 +316,7 @@ export default function AdminDashboardPage() {
           <Button size="sm" variant="teal" onClick={() => setIsPlayerModalOpen(true)}>
             + Register Player
           </Button>
-          <Button size="sm" variant="secondary" onClick={() => setIsMatchModalOpen(true)}>
+          <Button size="sm" variant="secondary" onClick={openMatchModal}>
             + Schedule Fixture
           </Button>
         </div>

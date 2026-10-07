@@ -33,6 +33,9 @@ const SEEDS_DIR = path.join(DATA_DIR, "seeds");
 
 /** True when running inside a Vercel deployment. */
 const IS_VERCEL = Boolean(process.env.VERCEL);
+const RUNTIME_DIR = IS_VERCEL
+  ? path.join(os.tmpdir(), "rpl-data")
+  : DATA_DIR;
 
 /**
  * Resolve the absolute path for a named data file.
@@ -40,22 +43,27 @@ const IS_VERCEL = Boolean(process.env.VERCEL);
  */
 function resolvePath(name: string): string {
   const base = name.endsWith(".json") ? name : `${name}.json`;
-  return path.join(DATA_DIR, base);
+  return path.join(RUNTIME_DIR, base);
 }
 
 /**
  * Read a JSON data file and return its parsed content.
  *
  * Resolution order:
- *   1. src/data/{name}.json        (live file, local only)
- *   2. src/data/seeds/{name}.json  (seed file, deployed to Vercel)
+ *   1. /tmp/rpl-data/{name}.json   (on Vercel runtime) OR src/data/{name}.json (local dev)
+ *   2. src/data/seeds/{name}.json  (seed baseline)
  *   3. fallback value              (if neither file exists)
  */
 export async function readJson<T>(name: string, fallback: T): Promise<T> {
-  const livePath = resolvePath(name);
+  const runtimePath = resolvePath(name);
   const seedPath = path.join(SEEDS_DIR, name.endsWith(".json") ? name : `${name}.json`);
+  const localLivePath = path.join(DATA_DIR, name.endsWith(".json") ? name : `${name}.json`);
 
-  for (const filePath of [livePath, seedPath]) {
+  const searchPaths = IS_VERCEL
+    ? [runtimePath, seedPath]
+    : [localLivePath, seedPath];
+
+  for (const filePath of searchPaths) {
     try {
       const raw = await fs.readFile(/*turbopackIgnore: true*/ filePath, "utf-8");
       return JSON.parse(raw) as T;
@@ -76,17 +84,10 @@ export async function readJson<T>(name: string, fallback: T): Promise<T> {
  * Write data to a JSON data file using an atomic write-then-rename.
  * The existing file is never touched until the new content is fully written.
  *
- * Throws immediately on Vercel because the project filesystem is read-only.
- * All write operations must be performed locally by an authenticated admin.
+ * In local development: writes to src/data/{name}.json.
+ * On Vercel: writes to /tmp/rpl-data/{name}.json so mutations succeed in serverless runtimes.
  */
 export async function writeJson<T>(name: string, data: T): Promise<void> {
-  if (IS_VERCEL) {
-    throw new Error(
-      `Write operations are not permitted on Vercel. ` +
-      `Update "${name}" locally, then run npm run data:publish to promote it to production.`
-    );
-  }
-
   const filePath = resolvePath(name);
   const dir = path.dirname(filePath);
   const tmpPath = path.join(
