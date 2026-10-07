@@ -4,36 +4,6 @@
     "username": "admin",
     "passwordHash": "admin123",
     "role": "admin",
-    "displayName": "Tournament Director"
-  },
-  {
-    "id": "usr_cap_1",
-    "username": "captain_chargers",
-    "passwordHash": "captain123",
-    "role": "captain",
-    "displayName": "Vikram Rathore",
-    "teamId": "team_1"
-  },
-  {
-    "id": "usr_cap_2",
-    "username": "captain_blasters",
-    "passwordHash": "captain123",
-    "role": "captain",
-    "displayName": "Rohit Varma",
-    "teamId": "team_2"
-  },
-  {
-    "id": "usr_umpire",
-    "username": "umpire",
-    "passwordHash": "umpire123",
-    "role": "umpire",
-    "displayName": "Official Umpire"
-  },
-  {
-    "id": "usr_user_1",
-    "username": "user",
-    "passwordHash": "user123",
-    "role": "user",
-    "displayName": "Cricket Fan"
+    "displayName": "Tournament Administrator"
   }
 ]

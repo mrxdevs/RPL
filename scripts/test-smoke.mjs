@@ -144,11 +144,88 @@ async function runTests() {
     }
   }
 
+  // Test User Management & Role Creation API (Admin Privileges)
+  console.log("\n--- 3b. User Role & Access Governance (Admin Provisioning) ---");
+  let testUmpireUsername = "smoke_umpire";
+  let testUserUsername = "smoke_user";
+
+  if (adminCookie) {
+    // 1. GET /api/users
+    const usersGet = await fetch(`${BASE_URL}/api/users`, {
+      headers: { Cookie: adminCookie },
+    });
+    if (usersGet.ok) {
+      const usersJson = await usersGet.json();
+      logPass(`Admin retrieved ${usersJson.data?.length || 0} registered user accounts`);
+    } else {
+      logFail(`Admin failed to get user list: status ${usersGet.status}`);
+    }
+
+    // 2. Non-admin access rejected check
+    const unauthUsersGet = await fetch(`${BASE_URL}/api/users`);
+    if (unauthUsersGet.status === 403) {
+      logPass("Unauthenticated request to /api/users rejected with 403 Forbidden");
+    } else {
+      logFail(`Expected 403 for unauthenticated /api/users, got ${unauthUsersGet.status}`);
+    }
+
+    // 3. Create Spectator / User
+    const createUserRes = await fetch(`${BASE_URL}/api/users`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Cookie: adminCookie },
+      body: JSON.stringify({
+        username: testUserUsername,
+        password: "user123",
+        displayName: "Smoke Spectator",
+        role: "user",
+      }),
+    });
+    if (createUserRes.ok || createUserRes.status === 409) {
+      logPass("Admin provisioned general user account successfully");
+    } else {
+      logFail(`Failed to provision user account: status ${createUserRes.status}`);
+    }
+
+    // 4. Create Umpire
+    const createUmpireRes = await fetch(`${BASE_URL}/api/users`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Cookie: adminCookie },
+      body: JSON.stringify({
+        username: testUmpireUsername,
+        password: "umpire123",
+        displayName: "Senior Match Official",
+        role: "umpire",
+      }),
+    });
+    if (createUmpireRes.ok || createUmpireRes.status === 409) {
+      logPass("Admin provisioned match umpire account successfully");
+    } else {
+      logFail(`Failed to provision umpire account: status ${createUmpireRes.status}`);
+    }
+
+    // 5. Create Captain
+    const createCaptainRes = await fetch(`${BASE_URL}/api/users`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Cookie: adminCookie },
+      body: JSON.stringify({
+        username: "smoke_captain",
+        password: "captain123",
+        displayName: "Team Lead",
+        role: "captain",
+      }),
+    });
+    if (createCaptainRes.ok || createCaptainRes.status === 409) {
+      logPass("Admin provisioned franchise captain account successfully");
+    } else {
+      logFail(`Failed to provision captain account: status ${createCaptainRes.status}`);
+    }
+  }
+
   // Test User / Fan login
   const userLogin = await fetch(`${BASE_URL}/api/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username: "user", password: "user123" }),
+    body: JSON.stringify({ username: testUserUsername, password: "user123" }),
   });
   if (userLogin.ok) {
     const userJson = await userLogin.json();
@@ -161,12 +238,29 @@ async function runTests() {
     logFail(`User login failed with status ${userLogin.status}`);
   }
 
+  // Test Captain login
+  const captainLogin = await fetch(`${BASE_URL}/api/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username: "smoke_captain", password: "captain123" }),
+  });
+  if (captainLogin.ok) {
+    const capJson = await captainLogin.json();
+    if (capJson.data?.role === "captain") {
+      logPass("Franchise Captain authenticated successfully (Role: captain)");
+    } else {
+      logFail("Role mismatch for captain account");
+    }
+  } else {
+    logFail(`Captain login failed with status ${captainLogin.status}`);
+  }
+
   // Test Umpire Live Scoring Delivery
   console.log("\n--- 4. Live Cricket Delivery Engine (Umpire Action) ---");
   const umpireLogin = await fetch(`${BASE_URL}/api/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username: "umpire", password: "umpire123" }),
+    body: JSON.stringify({ username: testUmpireUsername, password: "umpire123" }),
   });
 
   let umpireCookie = "";

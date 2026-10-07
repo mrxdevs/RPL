@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Team, Player, Match, PlayerRole, AuctionState } from "@/lib/types";
+import { Team, Player, Match, PlayerRole, AuctionState, UserRole } from "@/lib/types";
 import { PageShell } from "@/components/layout/PageShell";
 import { Card, CardHeader, CardBody } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -11,12 +11,23 @@ import { Badge } from "@/components/ui/Badge";
 import { Modal } from "@/components/ui/Modal";
 import { formatCurrency } from "@/lib/cricket/cricketCalculations";
 
+interface SafeUser {
+  id: string;
+  username: string;
+  displayName: string;
+  role: UserRole;
+  teamId?: string | null;
+  createdAt?: string;
+}
+
 export default function AdminDashboardPage() {
   const router = useRouter();
   const [teams, setTeams] = useState<Team[]>([]);
   const [players, setPlayers] = useState<Player[]>([]);
   const [matches, setMatches] = useState<Match[]>([]);
   const [auction, setAuction] = useState<AuctionState>({ history: [] });
+  const [users, setUsers] = useState<SafeUser[]>([]);
+  const [currentAdminUserId, setCurrentAdminUserId] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
   const [statusMsg, setStatusMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
@@ -29,6 +40,7 @@ export default function AdminDashboardPage() {
   const [isMatchModalOpen, setIsMatchModalOpen] = useState(false);
   const [isAuctionModalOpen, setIsAuctionModalOpen] = useState(false);
   const [selectedAuctionPlayer, setSelectedAuctionPlayer] = useState<Player | null>(null);
+  const [isUserModalOpen, setIsUserModalOpen] = useState(false);
 
   // Form states
   const [teamForm, setTeamForm] = useState({ name: "", shortName: "", totalBudget: 10000000, primaryColor: "#F55A00" });
@@ -46,6 +58,19 @@ export default function AdminDashboardPage() {
     format: "T20",
   });
   const [auctionForm, setAuctionForm] = useState({ teamId: "", soldPrice: 0 });
+  const [userForm, setUserForm] = useState<{
+    username: string;
+    password: string;
+    displayName: string;
+    role: UserRole;
+    teamId: string;
+  }>({
+    username: "",
+    password: "",
+    displayName: "",
+    role: "captain",
+    teamId: "",
+  });
 
   const loadData = React.useCallback(async () => {
     try {
@@ -55,24 +80,30 @@ export default function AdminDashboardPage() {
         router.push("/login");
         return;
       }
+      if (meJson.data.userId) {
+        setCurrentAdminUserId(meJson.data.userId);
+      }
 
-      const [tRes, pRes, mRes, aRes] = await Promise.all([
+      const [tRes, pRes, mRes, aRes, uRes] = await Promise.all([
         fetch("/api/teams"),
         fetch("/api/players"),
         fetch("/api/matches"),
         fetch("/api/auction"),
+        fetch("/api/users"),
       ]);
-      const [tJson, pJson, mJson, aJson] = await Promise.all([
+      const [tJson, pJson, mJson, aJson, uJson] = await Promise.all([
         tRes.json(),
         pRes.json(),
         mRes.json(),
         aRes.json(),
+        uRes.json(),
       ]);
 
       if (tJson.success) setTeams(tJson.data || []);
       if (pJson.success) setPlayers(pJson.data || []);
       if (mJson.success) setMatches(mJson.data || []);
       if (aJson.success && aJson.data?.auction) setAuction(aJson.data.auction);
+      if (uJson.success) setUsers(uJson.data || []);
     } catch {
       setStatusMsg({ type: "error", text: "Failed to load admin data" });
     } finally {
@@ -374,6 +405,58 @@ export default function AdminDashboardPage() {
     setIsMatchModalOpen(true);
   };
 
+  const handleCreateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await fetch("/api/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: userForm.username.trim(),
+          password: userForm.password,
+          displayName: userForm.displayName.trim(),
+          role: userForm.role,
+          teamId: userForm.role === "captain" ? (userForm.teamId || null) : null,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        setStatusMsg({ type: "error", text: json.error || "Failed to create user account" });
+        return;
+      }
+      setStatusMsg({ type: "success", text: `User account @${userForm.username} created with ${userForm.role} privileges!` });
+      setIsUserModalOpen(false);
+      setUserForm({ username: "", password: "", displayName: "", role: "captain", teamId: "" });
+      loadData();
+    } catch {
+      setStatusMsg({ type: "error", text: "Network error creating user account" });
+    }
+  };
+
+  const handleDeleteUser = async (user: SafeUser) => {
+    if (user.id === currentAdminUserId) {
+      setStatusMsg({ type: "error", text: "You cannot delete your own active administrator account." });
+      return;
+    }
+    if (!confirm(`Are you sure you want to delete user @${user.username} (${user.role})? This action cannot be undone.`)) {
+      return;
+    }
+    try {
+      const res = await fetch(`/api/users/${user.id}`, {
+        method: "DELETE",
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        setStatusMsg({ type: "error", text: json.error || "Failed to delete user account" });
+        return;
+      }
+      setStatusMsg({ type: "success", text: json.message || "User account removed." });
+      loadData();
+    } catch {
+      setStatusMsg({ type: "error", text: "Network error deleting user account" });
+    }
+  };
+
   if (isLoading) {
     return (
       <PageShell>
@@ -404,6 +487,9 @@ export default function AdminDashboardPage() {
           </Button>
           <Button size="sm" variant="secondary" onClick={openMatchModal}>
             + Schedule Fixture
+          </Button>
+          <Button size="sm" variant="secondary" onClick={() => setIsUserModalOpen(true)}>
+            + Create User
           </Button>
         </div>
       }
@@ -754,6 +840,113 @@ export default function AdminDashboardPage() {
         </CardBody>
       </Card>
 
+      {/* User Accounts and Access Privileges */}
+      <Card variant="surface">
+        <CardHeader>
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div>
+              <h3 className="text-lg font-bold font-display uppercase tracking-wide text-white">
+                User Role & Access Settings ({users.length})
+              </h3>
+              <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">
+                Create and govern authenticated accounts with role-based privileges: Captain, Umpire, Admin, and User
+              </p>
+            </div>
+            <Button size="sm" variant="primary" onClick={() => setIsUserModalOpen(true)}>
+              + Create User Account
+            </Button>
+          </div>
+        </CardHeader>
+        <CardBody className="p-0 overflow-x-auto">
+          {users.length === 0 ? (
+            <div className="p-8 text-center text-sm text-[var(--color-text-secondary)]">
+              No additional user accounts registered. Click &quot;+ Create User Account&quot; to provision roles.
+            </div>
+          ) : (
+            <table className="w-full text-left text-sm border-collapse">
+              <thead>
+                <tr className="border-b border-[var(--color-border)] text-xs font-semibold uppercase tracking-wider text-[var(--color-text-secondary)] font-display">
+                  <th className="py-3 px-4">Account</th>
+                  <th className="py-3 px-4">Display Name</th>
+                  <th className="py-3 px-4">Role Privilege</th>
+                  <th className="py-3 px-4">Assigned Franchise</th>
+                  <th className="py-3 px-4 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5 font-sans">
+                {users.map((u) => {
+                  const assignedTeam = teams.find((t) => t.id === u.teamId);
+                  const isCurrentAdmin = u.id === currentAdminUserId;
+
+                  let roleBadgeVariant: "yellow" | "teal" | "live" | "neutral" = "neutral";
+                  let roleLabel = u.role.toUpperCase();
+
+                  if (u.role === "admin") {
+                    roleBadgeVariant = "yellow";
+                    roleLabel = "ADMIN / DIRECTOR";
+                  } else if (u.role === "captain") {
+                    roleBadgeVariant = "teal";
+                    roleLabel = "CAPTAIN";
+                  } else if (u.role === "umpire") {
+                    roleBadgeVariant = "live";
+                    roleLabel = "MATCH UMPIRE";
+                  } else {
+                    roleLabel = "SPECTATOR";
+                  }
+
+                  return (
+                    <tr key={u.id} className="hover:bg-white/5 transition-colors">
+                      <td className="py-3 px-4 font-mono font-medium text-white">
+                        @{u.username}
+                        {isCurrentAdmin && (
+                          <span className="ml-2 text-[10px] px-1.5 py-0.5 rounded bg-[var(--color-accent)]/20 text-[var(--color-accent)] font-sans uppercase font-bold">
+                            Current
+                          </span>
+                        )}
+                      </td>
+                      <td className="py-3 px-4 text-white">
+                        {u.displayName}
+                      </td>
+                      <td className="py-3 px-4">
+                        <Badge variant={roleBadgeVariant} size="sm">
+                          {roleLabel}
+                        </Badge>
+                      </td>
+                      <td className="py-3 px-4 text-xs text-[var(--color-text-secondary)]">
+                        {assignedTeam ? (
+                          <span className="font-semibold text-[var(--color-accent)]">
+                            {assignedTeam.name}
+                          </span>
+                        ) : u.role === "captain" ? (
+                          <span className="text-[var(--color-status-live)]">Unassigned</span>
+                        ) : (
+                          "—"
+                        )}
+                      </td>
+                      <td className="py-3 px-4 text-right">
+                        {isCurrentAdmin ? (
+                          <span className="text-xs text-[var(--color-text-secondary)] italic">
+                            Protected
+                          </span>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="danger"
+                            onClick={() => handleDeleteUser(u)}
+                          >
+                            Remove
+                          </Button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
+        </CardBody>
+      </Card>
+
       {/* Modal: Create Team */}
       <Modal isOpen={isTeamModalOpen} onClose={() => setIsTeamModalOpen(false)} title="Create New Franchise">
         <form onSubmit={handleCreateTeam} className="space-y-4">
@@ -1047,6 +1240,108 @@ export default function AdminDashboardPage() {
 
           <Button type="submit" variant="secondary" size="md" className="w-full">
             Confirm Fixture Schedule
+          </Button>
+        </form>
+      </Modal>
+
+      {/* Modal: Create User & Role Privileges */}
+      <Modal isOpen={isUserModalOpen} onClose={() => setIsUserModalOpen(false)} title="Create User & Assign Access Privileges">
+        <form onSubmit={handleCreateUser} className="space-y-4">
+          <div className="p-3 rounded-lg bg-black/20 text-xs text-[var(--color-text-secondary)] space-y-1">
+            <p className="font-semibold text-white">Role Privileges:</p>
+            <ul className="list-disc list-inside space-y-0.5 text-[11px]">
+              <li><strong className="text-[var(--color-brand-teal-light)]">Captain:</strong> Can place live auction bids and manage squad match lineup</li>
+              <li><strong className="text-[var(--color-status-live)]">Umpire:</strong> Access to live ball-by-ball scoring console</li>
+              <li><strong className="text-[var(--color-accent)]">Admin:</strong> Full tournament administration, teams, and auction director</li>
+              <li><strong className="text-white">User:</strong> Standard spectator access to public RPL tournament boards</li>
+            </ul>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <label className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-secondary)] font-display">
+                Username
+              </label>
+              <input
+                type="text"
+                required
+                minLength={3}
+                placeholder="e.g. captain_chargers"
+                value={userForm.username}
+                onChange={(e) => setUserForm({ ...userForm, username: e.target.value })}
+                className="w-full px-3 py-2 rounded-lg bg-[var(--color-bg-base)] border border-[var(--color-border)] text-sm text-white lowercase"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-secondary)] font-display">
+                Password
+              </label>
+              <input
+                type="password"
+                required
+                minLength={4}
+                placeholder="Secure password"
+                value={userForm.password}
+                onChange={(e) => setUserForm({ ...userForm, password: e.target.value })}
+                className="w-full px-3 py-2 rounded-lg bg-[var(--color-bg-base)] border border-[var(--color-border)] text-sm text-white"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-secondary)] font-display">
+              Display Name
+            </label>
+            <input
+              type="text"
+              required
+              placeholder="e.g. Vikram Malhotra (Captain)"
+              value={userForm.displayName}
+              onChange={(e) => setUserForm({ ...userForm, displayName: e.target.value })}
+              className="w-full px-3 py-2 rounded-lg bg-[var(--color-bg-base)] border border-[var(--color-border)] text-sm text-white"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <label className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-secondary)] font-display">
+                Privilege Role
+              </label>
+              <select
+                value={userForm.role}
+                onChange={(e) => setUserForm({ ...userForm, role: e.target.value as UserRole })}
+                className="w-full px-3 py-2 rounded-lg bg-[var(--color-bg-base)] border border-[var(--color-border)] text-sm text-white"
+              >
+                <option value="captain">Captain (Franchise Bidding)</option>
+                <option value="umpire">Umpire (Live Scoring)</option>
+                <option value="admin">Admin (Tournament Director)</option>
+                <option value="user">User (Spectator)</option>
+              </select>
+            </div>
+
+            {userForm.role === "captain" && (
+              <div className="space-y-1">
+                <label className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-secondary)] font-display">
+                  Franchise Assignment
+                </label>
+                <select
+                  value={userForm.teamId}
+                  onChange={(e) => setUserForm({ ...userForm, teamId: e.target.value })}
+                  className="w-full px-3 py-2 rounded-lg bg-[var(--color-bg-base)] border border-[var(--color-border)] text-sm text-white"
+                >
+                  <option value="">Select Team (Optional)</option>
+                  {teams.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+          </div>
+
+          <Button type="submit" variant="primary" size="md" className="w-full">
+            Create User Account & Grant Access
           </Button>
         </form>
       </Modal>

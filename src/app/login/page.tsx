@@ -46,11 +46,6 @@ export default function LoginPage() {
     }
   };
 
-  const quickLogin = (u: string, p: string) => {
-    setUsername(u);
-    setPassword(p);
-    handleLogin(undefined, u, p);
-  };
 
   return (
     <PageShell className="flex items-center justify-center min-h-[75vh]">
@@ -115,60 +110,8 @@ export default function LoginPage() {
               </Button>
             </form>
 
-            {/* Quick Demo Credentials */}
-            <div className="mt-6 pt-5 border-t border-[var(--color-border)] space-y-3">
-              <span className="text-xs font-bold uppercase tracking-wider text-[var(--color-text-secondary)] font-display block text-center">
-                Quick Access Demo Accounts
-              </span>
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <button
-                  type="button"
-                  onClick={() => quickLogin("admin", "admin123")}
-                  className="p-2.5 rounded-lg bg-black/30 border border-white/5 hover:border-[var(--color-brand-teal)] text-left transition-colors cursor-pointer"
-                >
-                  <div className="font-bold text-white font-display uppercase">Tournament Admin</div>
-                  <div className="text-[10px] text-[var(--color-brand-teal-light)]">admin</div>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => quickLogin("umpire", "umpire123")}
-                  className="p-2.5 rounded-lg bg-black/30 border border-white/5 hover:border-[var(--color-accent)] text-left transition-colors cursor-pointer"
-                >
-                  <div className="font-bold text-white font-display uppercase">Match Umpire</div>
-                  <div className="text-[10px] text-[var(--color-accent)]">umpire</div>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => quickLogin("captain_chargers", "captain123")}
-                  className="p-2.5 rounded-lg bg-black/30 border border-white/5 hover:border-[var(--color-brand-orange)] text-left transition-colors cursor-pointer"
-                >
-                  <div className="font-bold text-white font-display uppercase">Captain (Chargers)</div>
-                  <div className="text-[10px] text-[var(--color-brand-orange-light)]">captain_chargers</div>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => quickLogin("captain_blasters", "captain123")}
-                  className="p-2.5 rounded-lg bg-black/30 border border-white/5 hover:border-[var(--color-brand-teal)] text-left transition-colors cursor-pointer"
-                >
-                  <div className="font-bold text-white font-display uppercase">Captain (Blasters)</div>
-                  <div className="text-[10px] text-[var(--color-brand-teal-light)]">captain_blasters</div>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => quickLogin("user", "user123")}
-                  className="col-span-2 p-2.5 rounded-lg bg-black/30 border border-white/5 hover:border-white/30 text-left transition-colors cursor-pointer flex items-center justify-between"
-                >
-                  <div>
-                    <div className="font-bold text-white font-display uppercase">General User / Fan</div>
-                    <div className="text-[10px] text-[var(--color-text-secondary)]">user (password: user123)</div>
-                  </div>
-                  <span className="text-[10px] font-semibold text-[var(--color-accent)] font-mono">Role: User</span>
-                </button>
-              </div>
+            <div className="mt-6 pt-5 border-t border-[var(--color-border)] text-center text-xs text-[var(--color-text-secondary)]">
+              Authorized personnel only. Access privileges (Administrator, Franchise Captain, Match Umpire) are provisioned directly by the tournament director in the Admin console.
             </div>
           </CardBody>
         </Card>
