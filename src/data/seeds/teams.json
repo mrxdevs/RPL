@@ -1,1 +1,40 @@
-[]
+[
+  {
+    "id": "team_1791368754206",
+    "name": "Chennai",
+    "shortName": "CHN",
+    "totalBudget": 10000000,
+    "remainingBudget": 3850000,
+    "playerIds": [
+      "ply_1791368772636",
+      "ply_1791368793376",
+      "ply_1791370163135"
+    ],
+    "primaryColor": "#F55A00",
+    "captainId": "ply_1791368772636"
+  },
+  {
+    "id": "team_1791368766827",
+    "name": "Bengluru",
+    "shortName": "BLR",
+    "totalBudget": 10000000,
+    "remainingBudget": 9500000,
+    "playerIds": [
+      "ply_1791368782464"
+    ],
+    "primaryColor": "#F55A00",
+    "captainId": "ply_1791368782464"
+  },
+  {
+    "id": "team_1791369820772",
+    "name": "Hydrabad",
+    "shortName": "HYD",
+    "totalBudget": 10000000,
+    "remainingBudget": 9500000,
+    "playerIds": [
+      "ply_1791368801157"
+    ],
+    "primaryColor": "#F55A00",
+    "captainId": "ply_1791368801157"
+  }
+]

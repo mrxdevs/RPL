@@ -7,6 +7,8 @@ import { Card, CardBody } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { formatCurrency } from "@/lib/cricket/cricketCalculations";
 
+import { mergeListsById } from "@/lib/utils/dataMerge";
+
 export default function PlayersPage() {
   const [players, setPlayers] = useState<Player[]>([]);
   const [teams, setTeams] = useState<Team[]>([]);
@@ -22,8 +24,8 @@ export default function PlayersPage() {
           fetch("/api/teams"),
         ]);
         const [pJson, tJson] = await Promise.all([pRes.json(), tRes.json()]);
-        if (pJson.success) setPlayers(pJson.data || []);
-        if (tJson.success) setTeams(tJson.data || []);
+        if (pJson.success && pJson.data) setPlayers((prev) => mergeListsById(prev, pJson.data));
+        if (tJson.success && tJson.data) setTeams((prev) => mergeListsById(prev, tJson.data));
       } catch {
         // Handle error
       } finally {

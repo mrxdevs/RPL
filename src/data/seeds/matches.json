@@ -1,1 +1,64 @@
-[]
+[
+  {
+    "id": "mat_1791368988303",
+    "matchNumber": 1,
+    "title": "Match 1",
+    "format": "T20",
+    "scheduledAt": "2026-10-08T14:00",
+    "venue": "Raptee Arena, Chennai",
+    "status": "live",
+    "teamAId": "team_1791368754206",
+    "teamBId": "team_1791368766827",
+    "umpireId": "usr_umpire",
+    "currentInningsNumber": 1,
+    "innings": [
+      {
+        "inningsNumber": 1,
+        "battingTeamId": "team_1791368754206",
+        "bowlingTeamId": "team_1791368766827",
+        "totalRuns": 0,
+        "wickets": 0,
+        "legalBalls": 0,
+        "totalOversAllowed": 20,
+        "extras": {
+          "wides": 0,
+          "noBalls": 0,
+          "byes": 0,
+          "legByes": 0,
+          "total": 0
+        },
+        "currentStrikerId": "ply_1791368772636",
+        "currentBowlerId": "ply_1791368782464",
+        "batsmen": [
+          {
+            "playerId": "ply_1791368772636",
+            "playerName": "Amjad",
+            "runs": 0,
+            "ballsFaced": 0,
+            "fours": 0,
+            "sixes": 0,
+            "strikeRate": 0,
+            "isOut": false
+          }
+        ],
+        "bowlers": [
+          {
+            "playerId": "ply_1791368782464",
+            "playerName": "Jason",
+            "overs": 0,
+            "ballsBowled": 0,
+            "maidens": 0,
+            "runsConceded": 0,
+            "wickets": 0,
+            "economy": 0
+          }
+        ],
+        "fallOfWickets": [],
+        "balls": [],
+        "isCompleted": false
+      }
+    ],
+    "tossWinnerTeamId": "team_1791368754206",
+    "tossDecision": "bat"
+  }
+]

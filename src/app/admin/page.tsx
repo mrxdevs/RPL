@@ -11,6 +11,8 @@ import { Badge } from "@/components/ui/Badge";
 import { Modal } from "@/components/ui/Modal";
 import { formatCurrency } from "@/lib/cricket/cricketCalculations";
 
+import { mergeListsById } from "@/lib/utils/dataMerge";
+
 interface SafeUser {
   id: string;
   username: string;
@@ -27,6 +29,7 @@ export default function AdminDashboardPage() {
   const [matches, setMatches] = useState<Match[]>([]);
   const [auction, setAuction] = useState<AuctionState>({ history: [] });
   const [users, setUsers] = useState<SafeUser[]>([]);
+  const [deletedUserIds, setDeletedUserIds] = useState<string[]>([]);
   const [currentAdminUserId, setCurrentAdminUserId] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
   const [statusMsg, setStatusMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
@@ -72,16 +75,18 @@ export default function AdminDashboardPage() {
     teamId: "",
   });
 
-  const loadData = React.useCallback(async () => {
+  const loadData = React.useCallback(async (isInitial = false) => {
     try {
-      const meRes = await fetch("/api/auth/me");
-      const meJson = await meRes.json();
-      if (!meJson.success || !meJson.data || meJson.data.role !== "admin") {
-        router.push("/login");
-        return;
-      }
-      if (meJson.data.userId) {
-        setCurrentAdminUserId(meJson.data.userId);
+      if (isInitial) {
+        const meRes = await fetch("/api/auth/me");
+        const meJson = await meRes.json();
+        if (!meJson.success || !meJson.data || meJson.data.role !== "admin") {
+          router.push("/login");
+          return;
+        }
+        if (meJson.data.userId) {
+          setCurrentAdminUserId(meJson.data.userId);
+        }
       }
 
       const [tRes, pRes, mRes, aRes, uRes] = await Promise.all([
@@ -99,24 +104,28 @@ export default function AdminDashboardPage() {
         uRes.json(),
       ]);
 
-      if (tJson.success) setTeams(tJson.data || []);
-      if (pJson.success) setPlayers(pJson.data || []);
-      if (mJson.success) setMatches(mJson.data || []);
+      if (tJson.success && tJson.data) setTeams((prev) => mergeListsById(prev, tJson.data));
+      if (pJson.success && pJson.data) setPlayers((prev) => mergeListsById(prev, pJson.data));
+      if (mJson.success && mJson.data) setMatches((prev) => mergeListsById(prev, mJson.data));
       if (aJson.success && aJson.data?.auction) setAuction(aJson.data.auction);
-      if (uJson.success) setUsers(uJson.data || []);
+      if (uJson.success && uJson.data) setUsers((prev) => mergeListsById(prev, uJson.data, deletedUserIds));
     } catch {
-      setStatusMsg({ type: "error", text: "Failed to load admin data" });
+      if (isInitial) {
+        setStatusMsg({ type: "error", text: "Failed to load admin data" });
+      }
     } finally {
-      setIsLoading(false);
+      if (isInitial) {
+        setIsLoading(false);
+      }
     }
-  }, [router]);
+  }, [router, deletedUserIds]);
 
   useEffect(() => {
     let isMounted = true;
 
     const initialize = async () => {
       if (isMounted) {
-        await loadData();
+        await loadData(true);
       }
     };
 
@@ -124,7 +133,7 @@ export default function AdminDashboardPage() {
 
     const interval = setInterval(() => {
       if (isMounted) {
-        loadData();
+        loadData(false);
       }
     }, 3000);
 
@@ -451,7 +460,9 @@ export default function AdminDashboardPage() {
         return;
       }
       setStatusMsg({ type: "success", text: json.message || "User account removed." });
-      loadData();
+      setDeletedUserIds((prev) => [...prev, user.id]);
+      setUsers((prev) => prev.filter((u) => u.id !== user.id));
+      loadData(false);
     } catch {
       setStatusMsg({ type: "error", text: "Network error deleting user account" });
     }

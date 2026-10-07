@@ -5,5 +5,36 @@
     "passwordHash": "admin123",
     "role": "admin",
     "displayName": "Tournament Administrator"
+  },
+  {
+    "id": "usr_1791368895710",
+    "username": "chennai",
+    "passwordHash": "chennai123",
+    "role": "captain",
+    "displayName": "Chennai Cap",
+    "teamId": "team_1791368754206"
+  },
+  {
+    "id": "usr_1791368938366",
+    "username": "bengaluru",
+    "passwordHash": "bengluru123",
+    "role": "captain",
+    "displayName": "Bengluru Cap",
+    "teamId": "team_1791368766827"
+  },
+  {
+    "id": "usr_1791368958795",
+    "username": "referee",
+    "passwordHash": "refree123",
+    "role": "umpire",
+    "displayName": "Refree"
+  },
+  {
+    "id": "usr_1791369998513",
+    "username": "hyderabad",
+    "passwordHash": "hyderabas123",
+    "role": "captain",
+    "displayName": "Hyderabad Cap",
+    "teamId": "team_1791369820772"
   }
 ]

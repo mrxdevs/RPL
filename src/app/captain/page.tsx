@@ -21,29 +21,34 @@ export default function CaptainDashboardPage() {
 
   useEffect(() => {
     let isMounted = true;
+    let activeTeamId: string | null = session?.teamId || null;
 
-    async function loadData() {
+    async function loadData(isInitial = false) {
       try {
-        const meRes = await fetch("/api/auth/me");
-        const meJson = await meRes.json();
+        if (isInitial) {
+          const meRes = await fetch("/api/auth/me");
+          const meJson = await meRes.json();
 
-        if (!isMounted) return;
+          if (!isMounted) return;
 
-        if (!meJson.success || !meJson.data || meJson.data.role !== "captain") {
-          router.push("/login");
-          return;
+          if (!meJson.success || !meJson.data || meJson.data.role !== "captain") {
+            router.push("/login");
+            return;
+          }
+
+          setSession(meJson.data);
+          activeTeamId = meJson.data.teamId || null;
+
+          if (!activeTeamId) {
+            setStatusMsg({ type: "error", text: "No franchise team assigned to your captain account." });
+            return;
+          }
         }
 
-        setSession(meJson.data);
-        const teamId = meJson.data.teamId;
-
-        if (!teamId) {
-          if (isMounted) setStatusMsg({ type: "error", text: "No franchise team assigned to your captain account." });
-          return;
-        }
+        if (!activeTeamId) return;
 
         const [teamRes, auctionRes] = await Promise.all([
-          fetch(`/api/teams/${teamId}`),
+          fetch(`/api/teams/${activeTeamId}`),
           fetch("/api/auction"),
         ]);
         const [teamJson, auctionJson] = await Promise.all([
@@ -65,20 +70,22 @@ export default function CaptainDashboardPage() {
           setHasActiveAuction(false);
         }
       } catch {
-        if (isMounted) setStatusMsg({ type: "error", text: "Failed to load captain squad data." });
+        if (isMounted && isInitial) {
+          setStatusMsg({ type: "error", text: "Failed to load captain squad data." });
+        }
       } finally {
-        if (isMounted) setIsLoading(false);
+        if (isMounted && isInitial) setIsLoading(false);
       }
     }
 
-    loadData();
-    const interval = setInterval(loadData, 4000);
+    loadData(true);
+    const interval = setInterval(() => loadData(false), 4000);
 
     return () => {
       isMounted = false;
       clearInterval(interval);
     };
-  }, [router]);
+  }, [router, session?.teamId]);
 
   const handleUpdateRole = async (playerId: string, newRole: PlayerRole) => {
     try {

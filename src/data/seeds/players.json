@@ -1,1 +1,183 @@
-[]
+[
+  {
+    "id": "ply_1791368772636",
+    "name": "Amjad",
+    "role": "Batter",
+    "basePrice": 500000,
+    "auctionStatus": "sold",
+    "stats": {
+      "matches": 0,
+      "runs": 0,
+      "ballsFaced": 0,
+      "highestScore": 0,
+      "fours": 0,
+      "sixes": 0,
+      "wickets": 0,
+      "oversBowled": 0,
+      "runsConceded": 0,
+      "bestBowling": "0/0"
+    },
+    "teamId": "team_1791368754206",
+    "soldPrice": 500000
+  },
+  {
+    "id": "ply_1791368782464",
+    "name": "Jason",
+    "role": "Bowler",
+    "basePrice": 500000,
+    "auctionStatus": "sold",
+    "stats": {
+      "matches": 0,
+      "runs": 0,
+      "ballsFaced": 0,
+      "highestScore": 0,
+      "fours": 0,
+      "sixes": 0,
+      "wickets": 0,
+      "oversBowled": 0,
+      "runsConceded": 0,
+      "bestBowling": "0/0"
+    },
+    "teamId": "team_1791368766827",
+    "soldPrice": 500000
+  },
+  {
+    "id": "ply_1791368793376",
+    "name": "Prithvi",
+    "role": "Wicketkeeper",
+    "basePrice": 500000,
+    "auctionStatus": "sold",
+    "stats": {
+      "matches": 0,
+      "runs": 0,
+      "ballsFaced": 0,
+      "highestScore": 0,
+      "fours": 0,
+      "sixes": 0,
+      "wickets": 0,
+      "oversBowled": 0,
+      "runsConceded": 0,
+      "bestBowling": "0/0"
+    },
+    "teamId": "team_1791368754206",
+    "soldPrice": 5000000
+  },
+  {
+    "id": "ply_1791368801157",
+    "name": "Keerthi",
+    "role": "All-rounder",
+    "basePrice": 500000,
+    "auctionStatus": "sold",
+    "stats": {
+      "matches": 0,
+      "runs": 0,
+      "ballsFaced": 0,
+      "highestScore": 0,
+      "fours": 0,
+      "sixes": 0,
+      "wickets": 0,
+      "oversBowled": 0,
+      "runsConceded": 0,
+      "bestBowling": "0/0"
+    },
+    "teamId": "team_1791369820772",
+    "soldPrice": 500000
+  },
+  {
+    "id": "ply_1791370163135",
+    "name": "Devadarshini",
+    "role": "Batter",
+    "basePrice": 500000,
+    "auctionStatus": "sold",
+    "stats": {
+      "matches": 0,
+      "runs": 0,
+      "ballsFaced": 0,
+      "highestScore": 0,
+      "fours": 0,
+      "sixes": 0,
+      "wickets": 0,
+      "oversBowled": 0,
+      "runsConceded": 0,
+      "bestBowling": "0/0"
+    },
+    "teamId": "team_1791368754206",
+    "soldPrice": 650000
+  },
+  {
+    "id": "ply_1791370200001",
+    "name": "Rahul Sharma",
+    "role": "Batter",
+    "basePrice": 500000,
+    "auctionStatus": "available",
+    "stats": {
+      "matches": 0,
+      "runs": 0,
+      "ballsFaced": 0,
+      "highestScore": 0,
+      "fours": 0,
+      "sixes": 0,
+      "wickets": 0,
+      "oversBowled": 0,
+      "runsConceded": 0,
+      "bestBowling": "0/0"
+    }
+  },
+  {
+    "id": "ply_1791370200002",
+    "name": "Karthik V",
+    "role": "Bowler",
+    "basePrice": 500000,
+    "auctionStatus": "available",
+    "stats": {
+      "matches": 0,
+      "runs": 0,
+      "ballsFaced": 0,
+      "highestScore": 0,
+      "fours": 0,
+      "sixes": 0,
+      "wickets": 0,
+      "oversBowled": 0,
+      "runsConceded": 0,
+      "bestBowling": "0/0"
+    }
+  },
+  {
+    "id": "ply_1791370200003",
+    "name": "Siddharth R",
+    "role": "All-rounder",
+    "basePrice": 750000,
+    "auctionStatus": "available",
+    "stats": {
+      "matches": 0,
+      "runs": 0,
+      "ballsFaced": 0,
+      "highestScore": 0,
+      "fours": 0,
+      "sixes": 0,
+      "wickets": 0,
+      "oversBowled": 0,
+      "runsConceded": 0,
+      "bestBowling": "0/0"
+    }
+  },
+  {
+    "id": "ply_1791370200004",
+    "name": "Dinesh Kumar",
+    "role": "Wicketkeeper",
+    "basePrice": 500000,
+    "auctionStatus": "available",
+    "stats": {
+      "matches": 0,
+      "runs": 0,
+      "ballsFaced": 0,
+      "highestScore": 0,
+      "fours": 0,
+      "sixes": 0,
+      "wickets": 0,
+      "oversBowled": 0,
+      "runsConceded": 0,
+      "bestBowling": "0/0"
+    }
+  }
+]

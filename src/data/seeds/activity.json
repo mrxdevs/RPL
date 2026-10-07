@@ -1,1 +1,248 @@
-[]
+[
+  {
+    "category": "auction",
+    "title": "Hammer Down: Player Sold",
+    "description": "Devadarshini sold to Chennai for ₹6,50,000.",
+    "teamId": "team_1791368754206",
+    "playerId": "ply_1791370163135",
+    "id": "act_1791370392435_smvok",
+    "timestamp": "2026-10-07T10:53:12.435Z"
+  },
+  {
+    "category": "auction",
+    "title": "New Bid Placed",
+    "description": "Chennai bid ₹6,50,000 for Devadarshini.",
+    "teamId": "team_1791368754206",
+    "playerId": "ply_1791370163135",
+    "id": "act_1791370383573_dkyzi",
+    "timestamp": "2026-10-07T10:53:03.573Z"
+  },
+  {
+    "category": "auction",
+    "title": "New Bid Placed",
+    "description": "Chennai bid ₹6,25,000 for Devadarshini.",
+    "teamId": "team_1791368754206",
+    "playerId": "ply_1791370163135",
+    "id": "act_1791370376668_lisnv",
+    "timestamp": "2026-10-07T10:52:56.668Z"
+  },
+  {
+    "category": "auction",
+    "title": "New Bid Placed",
+    "description": "Chennai bid ₹6,00,000 for Devadarshini.",
+    "teamId": "team_1791368754206",
+    "playerId": "ply_1791370163135",
+    "id": "act_1791370350795_8ft8c",
+    "timestamp": "2026-10-07T10:52:30.795Z"
+  },
+  {
+    "category": "auction",
+    "title": "Player on Auction Block",
+    "description": "Devadarshini (Batter) is now under the hammer with base price ₹5,00,000.",
+    "playerId": "ply_1791370163135",
+    "id": "act_1791370165830_tmrnu",
+    "timestamp": "2026-10-07T10:49:25.830Z"
+  },
+  {
+    "category": "team_update",
+    "title": "Player Registered",
+    "description": "Devadarshini registered as Batter with base price ₹5,00,000.",
+    "playerId": "ply_1791370163135",
+    "id": "act_1791370163143_5gnrg",
+    "timestamp": "2026-10-07T10:49:23.143Z"
+  },
+  {
+    "category": "auction",
+    "title": "Hammer Down: Player Sold",
+    "description": "Prithvi sold to Chennai for ₹50,00,000.",
+    "teamId": "team_1791368754206",
+    "playerId": "ply_1791368793376",
+    "id": "act_1791370096112_fejum",
+    "timestamp": "2026-10-07T10:48:16.112Z"
+  },
+  {
+    "category": "team_update",
+    "title": "User Account Created",
+    "description": "New CAPTAIN account created for \"hyderabad\" (Hyderabad Cap).",
+    "id": "act_1791369998517_qzik0",
+    "timestamp": "2026-10-07T10:46:38.517Z"
+  },
+  {
+    "category": "team_update",
+    "title": "User Account Removed",
+    "description": "Account \"hydarbad\" (captain) was deleted.",
+    "id": "act_1791369964292_srrqw",
+    "timestamp": "2026-10-07T10:46:04.292Z"
+  },
+  {
+    "category": "team_update",
+    "title": "User Account Created",
+    "description": "New CAPTAIN account created for \"hydarbad\" (Hydrabad cap).",
+    "id": "act_1791369900287_u50nu",
+    "timestamp": "2026-10-07T10:45:00.287Z"
+  },
+  {
+    "category": "team_update",
+    "title": "Captain Appointed",
+    "description": "Keerthi appointed as captain of Hydrabad.",
+    "teamId": "team_1791369820772",
+    "playerId": "ply_1791368801157",
+    "id": "act_1791369858775_hu89y",
+    "timestamp": "2026-10-07T10:44:18.775Z"
+  },
+  {
+    "category": "auction",
+    "title": "Player Sold",
+    "description": "Keerthi acquired by Hydrabad for ₹5,00,000.",
+    "teamId": "team_1791369820772",
+    "playerId": "ply_1791368801157",
+    "id": "act_1791369835928_xhovh",
+    "timestamp": "2026-10-07T10:43:55.928Z"
+  },
+  {
+    "category": "team_update",
+    "title": "New Team Registered",
+    "description": "Hydrabad (HYD) created with a budget of ₹1,00,00,000.",
+    "teamId": "team_1791369820772",
+    "id": "act_1791369820777_gp1to",
+    "timestamp": "2026-10-07T10:43:40.777Z"
+  },
+  {
+    "category": "auction",
+    "title": "New Bid Placed",
+    "description": "Chennai bid ₹50,00,000 for Prithvi.",
+    "teamId": "team_1791368754206",
+    "playerId": "ply_1791368793376",
+    "id": "act_1791369234750_3zdtd",
+    "timestamp": "2026-10-07T10:33:54.750Z"
+  },
+  {
+    "category": "auction",
+    "title": "Player on Auction Block",
+    "description": "Prithvi (Wicketkeeper) is now under the hammer with base price ₹5,00,000.",
+    "playerId": "ply_1791368793376",
+    "id": "act_1791369171858_tj7eh",
+    "timestamp": "2026-10-07T10:32:51.858Z"
+  },
+  {
+    "category": "match_status",
+    "title": "Match Started",
+    "description": "Match 1 status changed to live.",
+    "matchId": "mat_1791368988303",
+    "id": "act_1791369127544_a0j6a",
+    "timestamp": "2026-10-07T10:32:07.544Z"
+  },
+  {
+    "category": "match_status",
+    "title": "Fixture Scheduled",
+    "description": "Match 1: Chennai vs Bengluru scheduled at Raptee Arena, Chennai.",
+    "matchId": "mat_1791368988303",
+    "id": "act_1791368988306_6n2o3",
+    "timestamp": "2026-10-07T10:29:48.306Z"
+  },
+  {
+    "category": "team_update",
+    "title": "User Account Created",
+    "description": "New UMPIRE account created for \"referee\" (Refree).",
+    "id": "act_1791368958797_wsd9t",
+    "timestamp": "2026-10-07T10:29:18.797Z"
+  },
+  {
+    "category": "team_update",
+    "title": "User Account Created",
+    "description": "New CAPTAIN account created for \"bengaluru\" (Bengluru Cap).",
+    "id": "act_1791368938370_y49gx",
+    "timestamp": "2026-10-07T10:28:58.370Z"
+  },
+  {
+    "category": "team_update",
+    "title": "User Account Created",
+    "description": "New CAPTAIN account created for \"chennai\" (Chennai Cap).",
+    "id": "act_1791368895714_ctw0y",
+    "timestamp": "2026-10-07T10:28:15.714Z"
+  },
+  {
+    "category": "team_update",
+    "title": "Captain Appointed",
+    "description": "Jason appointed as captain of Bengluru.",
+    "teamId": "team_1791368766827",
+    "playerId": "ply_1791368782464",
+    "id": "act_1791368838035_2x20j",
+    "timestamp": "2026-10-07T10:27:18.035Z"
+  },
+  {
+    "category": "team_update",
+    "title": "Captain Appointed",
+    "description": "Amjad appointed as captain of Chennai.",
+    "teamId": "team_1791368754206",
+    "playerId": "ply_1791368772636",
+    "id": "act_1791368831342_aggz4",
+    "timestamp": "2026-10-07T10:27:11.342Z"
+  },
+  {
+    "category": "auction",
+    "title": "Player Sold",
+    "description": "Jason acquired by Bengluru for ₹5,00,000.",
+    "teamId": "team_1791368766827",
+    "playerId": "ply_1791368782464",
+    "id": "act_1791368825173_px6bf",
+    "timestamp": "2026-10-07T10:27:05.173Z"
+  },
+  {
+    "category": "auction",
+    "title": "Player Sold",
+    "description": "Amjad acquired by Chennai for ₹5,00,000.",
+    "teamId": "team_1791368754206",
+    "playerId": "ply_1791368772636",
+    "id": "act_1791368820152_vmc8k",
+    "timestamp": "2026-10-07T10:27:00.152Z"
+  },
+  {
+    "category": "team_update",
+    "title": "Player Registered",
+    "description": "Keerthi registered as All-rounder with base price ₹5,00,000.",
+    "playerId": "ply_1791368801157",
+    "id": "act_1791368801158_p7n02",
+    "timestamp": "2026-10-07T10:26:41.159Z"
+  },
+  {
+    "category": "team_update",
+    "title": "Player Registered",
+    "description": "Prithvi registered as Wicketkeeper with base price ₹5,00,000.",
+    "playerId": "ply_1791368793376",
+    "id": "act_1791368793391_fxe79",
+    "timestamp": "2026-10-07T10:26:33.391Z"
+  },
+  {
+    "category": "team_update",
+    "title": "Player Registered",
+    "description": "Jason registered as Bowler with base price ₹5,00,000.",
+    "playerId": "ply_1791368782464",
+    "id": "act_1791368782467_14gsm",
+    "timestamp": "2026-10-07T10:26:22.467Z"
+  },
+  {
+    "category": "team_update",
+    "title": "Player Registered",
+    "description": "Amjad registered as Batter with base price ₹5,00,000.",
+    "playerId": "ply_1791368772636",
+    "id": "act_1791368772638_z6kcj",
+    "timestamp": "2026-10-07T10:26:12.638Z"
+  },
+  {
+    "category": "team_update",
+    "title": "New Team Registered",
+    "description": "Bengluru (BLR) created with a budget of ₹1,00,00,000.",
+    "teamId": "team_1791368766827",
+    "id": "act_1791368766831_l68ru",
+    "timestamp": "2026-10-07T10:26:06.831Z"
+  },
+  {
+    "category": "team_update",
+    "title": "New Team Registered",
+    "description": "Chennai (CHN) created with a budget of ₹1,00,00,000.",
+    "teamId": "team_1791368754206",
+    "id": "act_1791368754209_qmi7s",
+    "timestamp": "2026-10-07T10:25:54.209Z"
+  }
+]

@@ -9,6 +9,8 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { formatCurrency } from "@/lib/cricket/cricketCalculations";
 
+import { mergeListsById } from "@/lib/utils/dataMerge";
+
 interface AuctionPageData {
   auction: AuctionState;
   availablePlayers: Player[];
@@ -39,7 +41,16 @@ export default function AuctionPage() {
       const res = await fetch("/api/auction");
       const json = await res.json();
       if (json.success && json.data) {
-        setData(json.data);
+        setData((prev) => {
+          if (!prev) return json.data;
+          return {
+            ...json.data,
+            availablePlayers: mergeListsById(prev.availablePlayers, json.data.availablePlayers),
+            soldPlayers: mergeListsById(prev.soldPlayers, json.data.soldPlayers),
+            teams: mergeListsById(prev.teams, json.data.teams),
+            currentUser: json.data.currentUser ?? prev.currentUser ?? null,
+          };
+        });
       }
     } catch {
       // Silently catch network blips
@@ -70,7 +81,16 @@ export default function AuctionPage() {
           .then((res) => res.json())
           .then((json) => {
             if (isMounted && json.success && json.data) {
-              setData(json.data);
+              setData((prev) => {
+                if (!prev) return json.data;
+                return {
+                  ...json.data,
+                  availablePlayers: mergeListsById(prev.availablePlayers, json.data.availablePlayers),
+                  soldPlayers: mergeListsById(prev.soldPlayers, json.data.soldPlayers),
+                  teams: mergeListsById(prev.teams, json.data.teams),
+                  currentUser: json.data.currentUser ?? prev.currentUser ?? null,
+                };
+              });
             }
           })
           .catch(() => {});

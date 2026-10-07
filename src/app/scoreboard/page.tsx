@@ -6,6 +6,8 @@ import { PageShell } from "@/components/layout/PageShell";
 import { LiveScoreCard } from "@/components/scoreboard/LiveScoreCard";
 import { Button } from "@/components/ui/Button";
 
+import { mergeListsById } from "@/lib/utils/dataMerge";
+
 export default function ScoreboardPage() {
   const [matches, setMatches] = useState<Match[]>([]);
   const [teams, setTeams] = useState<Team[]>([]);
@@ -23,8 +25,8 @@ export default function ScoreboardPage() {
         ]);
         const [mJson, tJson] = await Promise.all([mRes.json(), tRes.json()]);
         if (isMounted) {
-          if (mJson.success) setMatches(mJson.data || []);
-          if (tJson.success) setTeams(tJson.data || []);
+          if (mJson.success && mJson.data) setMatches((prev) => mergeListsById(prev, mJson.data));
+          if (tJson.success && tJson.data) setTeams((prev) => mergeListsById(prev, tJson.data));
         }
       } catch {
         // Silently catch errors on unmount
