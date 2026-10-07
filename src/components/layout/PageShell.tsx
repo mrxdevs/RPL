@@ -16,7 +16,7 @@ export function PageShell({
   className = "",
 }: PageShellProps) {
   return (
-    <main className={`flex-1 py-8 sm:py-10 ${className}`}>
+    <main className={`flex-1 py-8 sm:py-10 pb-24 md:pb-10 ${className}`}>
       <div className="container-rpl space-y-8">
         {(title || action) && (
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[var(--color-border)]">
